@@ -1,9 +1,9 @@
 export class ToolState {
     public toolName: string;
-    public enabled: boolean;
+    public state: string; // 'selected', 'enabled', 'disabled'
 
-    constructor(public tool: string, private isEnabled: boolean) {
+    constructor(public tool: string, private toolState: string) {
       this.toolName = tool;
-      this.enabled = isEnabled;
+      this.state = toolState;
     }
   }

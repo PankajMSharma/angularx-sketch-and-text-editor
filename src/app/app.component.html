@@ -1,5 +1,9 @@
 <!-- Text Editor Part goes here -->
 <ng-editor-header
-[editorTitle]="title"></ng-editor-header>
-<ng-editor></ng-editor>
+  [editorTitle]="editorTitle"
+  (selectedTool)="updateSelectedTool($event)">
+</ng-editor-header>
+<ng-editor
+  [selectedTool]="selectedTool">
+</ng-editor>
 <ng-editor-footer></ng-editor-footer>

@@ -6,5 +6,10 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'AngularX Editor';
+  public editorTitle = 'AngularX Editor';
+  public selectedTool;
+
+  public updateSelectedTool(tool: string) {
+    this.selectedTool = tool;
+  }
 }

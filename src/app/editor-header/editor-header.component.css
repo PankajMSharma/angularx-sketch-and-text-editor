@@ -5,7 +5,15 @@
     border-right:1px solid black;
     padding-right: 1rem;
 }
-.tool-rectangle {
-    border: 2px solid black;
-    width: 1rem;
+.active-tool {
+    color: rgb(0, 174, 255);
+}
+.passive-tool {
+    color: black;
+}
+.disabled-tool {
+    color: rgb(209, 209, 209);
+}
+.far:hover, .fas:hover {
+    color: rgb(0, 174, 255);
 }

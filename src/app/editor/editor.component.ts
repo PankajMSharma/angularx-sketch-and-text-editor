@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener, Input, Renderer2, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, HostListener, Input, Renderer2, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { Subscription, Observable } from 'rxjs';
 import { DrawingSettings } from '../models/drawing-settings';
 
@@ -11,7 +11,7 @@ const NAMESPACE = {
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.css']
 })
-export class EditorComponent implements OnInit {
+export class EditorComponent implements OnInit, OnDestroy {
   @Input() selectedTool: string;
   @ViewChild('svg') svg: ElementRef;
   private elemInConstruction: Element;
@@ -44,7 +44,7 @@ export class EditorComponent implements OnInit {
     }
   }
 
-  public drawRectangle(event: MouseEvent): void {
+  private drawRectangle(event: MouseEvent): void {
     let x: number;
     let y: number;
       if (!this.elemInConstruction) {
@@ -62,30 +62,61 @@ export class EditorComponent implements OnInit {
         x = +this.elemInConstruction.getAttribute('x');
         y = +this.elemInConstruction.getAttribute('y');
       }
-      this.mouseMoveSubscription = Observable.fromEvent(this.svg.nativeElement, 'mousemove').subscribe((event:MouseEvent) => {
-        let width = event.clientX - x;
-        let height = event.clientY - y;
-        this.renderer.setAttribute(this.elemInConstruction, 'x', ((width > 0) ? x : event.clientX).toString());
-        this.renderer.setAttribute(this.elemInConstruction, 'y', ((height > 0) ? y : event.clientY).toString());
+      this.mouseMoveSubscription = Observable.fromEvent(this.svg.nativeElement, 'mousemove').subscribe((moveEvent: MouseEvent) => {
+        if (this.elemInConstruction) {
+        const width = moveEvent.clientX - x;
+        const height = moveEvent.clientY - y;
+        this.renderer.setAttribute(this.elemInConstruction, 'x', ((width > 0) ? x : moveEvent.clientX).toString());
+        this.renderer.setAttribute(this.elemInConstruction, 'y', ((height > 0) ? y : moveEvent.clientY).toString());
         this.renderer.setAttribute(this.elemInConstruction, 'width', ((width > 0) ? width : (-1 * width)).toString());
         this.renderer.setAttribute(this.elemInConstruction, 'height', ((height > 0) ? height : (-1 * height)).toString());
+        }
       });
-      this.mouseUpSubscription = Observable.fromEvent(this.svg.nativeElement, 'mouseup').subscribe((event:MouseEvent) => {
-        let width = event.clientX - x;
-        let height = event.clientY - y;
-        if (!width || !height) {
+      this.mouseUpSubscription = Observable.fromEvent(this.svg.nativeElement, 'mouseup').subscribe((UpEvent: MouseEvent) => {
+        const width = UpEvent.clientX - x;
+        const height = UpEvent.clientY - y;
+        if ((!width || !height) && this.elemInConstruction) {
           this.renderer.removeChild(this.svg.nativeElement, this.elemInConstruction);
-        } else {
-          this.renderer.setAttribute(this.elemInConstruction, 'x', ((width > 0) ? x : event.clientX).toString());
-          this.renderer.setAttribute(this.elemInConstruction, 'y', ((height > 0) ? y : event.clientY).toString());
-          this.renderer.setAttribute(this.elemInConstruction, 'width', ((width > 0) ? width : (-1 * width)).toString());
-          this.renderer.setAttribute(this.elemInConstruction, 'height', ((height > 0) ? height : (-1 * height)).toString());
         }
       });
   }
 
   public drawEllipse(event: MouseEvent): void {
-
+    let cx: number;
+    let cy: number;
+      if (!this.elemInConstruction) {
+        const elem = document.createElementNS(NAMESPACE.SVG, 'ellipse');
+        this.renderer.setAttribute(elem, 'cx', event.clientX.toString());
+        this.renderer.setAttribute(elem, 'cy', event.clientY.toString());
+        this.renderer.setAttribute(elem, 'stroke', this.drawSettings.stroke);
+        this.renderer.setAttribute(elem, 'fill', this.drawSettings.fill);
+        this.renderer.setAttribute(elem, 'stroke-width', this.drawSettings.strokeWidth);
+        this.renderer.setAttribute(elem, 'id', this.generateElementId());
+        this.renderer.setAttribute(elem, 'rx', '0');
+        this.renderer.setAttribute(elem, 'ry', '0');
+        this.elemInConstruction = elem;
+        this.svg.nativeElement.append(this.elemInConstruction);
+        cx = +this.elemInConstruction.getAttribute('cx');
+        cy = +this.elemInConstruction.getAttribute('cy');
+      }
+      this.mouseMoveSubscription = Observable.fromEvent(this.svg.nativeElement, 'mousemove').subscribe((moveEvent: MouseEvent) => {
+        if (this.elemInConstruction) {
+        const rx = moveEvent.clientX - cx;
+        const ry = moveEvent.clientY - cy;
+        this.renderer.setAttribute(this.elemInConstruction, 'rx', ((rx > 0) ? rx : (-1 * rx)).toString());
+        this.renderer.setAttribute(this.elemInConstruction, 'ry', ((ry > 0) ? ry : (-1 * ry)).toString());
+        }
+      });
+      this.mouseUpSubscription = Observable.fromEvent(this.svg.nativeElement, 'mouseup').subscribe((UpEvent: MouseEvent) => {
+        const rx = UpEvent.clientX - cx;
+        const ry = UpEvent.clientY - cy;
+        if ((!rx || !ry) && this.elemInConstruction) {
+          this.renderer.removeChild(this.svg.nativeElement, this.elemInConstruction);
+        } else {
+          this.renderer.setAttribute(this.elemInConstruction, 'rx', ((rx > 0) ? rx : (-1 * rx)).toString());
+          this.renderer.setAttribute(this.elemInConstruction, 'ry', ((ry > 0) ? ry : (-1 * ry)).toString());
+        }
+      });
   }
 
   private generateElementId(): string {

@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 import { EditorComponent } from './editor/editor.component';
 import { EditorHeaderComponent } from './editor-header/editor-header.component';
 import { EditorFooterComponent } from './editor-footer/editor-footer.component';
+import { SelectService } from './services/select.service';
 
 
 @NgModule({
@@ -18,7 +19,7 @@ import { EditorFooterComponent } from './editor-footer/editor-footer.component';
     EditorHeaderComponent,
     EditorFooterComponent
   ],
-  providers: [],
+  providers: [SelectService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

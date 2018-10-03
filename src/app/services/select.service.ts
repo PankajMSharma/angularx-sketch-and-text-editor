@@ -33,7 +33,7 @@ export class SelectService {
     this.renderer.setAttribute(parentGroup, 'display', 'inline');
 
     let resizeHandler = document.createElementNS(NAMESPACE.SVG, 'circle');
-    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_ne');
+    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_nw');
     this.renderer.setAttribute(resizeHandler, 'fill', '#22C');
     this.renderer.setAttribute(resizeHandler, 'stroke-width', '2');
     this.renderer.setAttribute(resizeHandler, 'r', '4');
@@ -55,7 +55,7 @@ export class SelectService {
     this.renderer.appendChild(handlerGroup, resizeHandler);
 
     resizeHandler = document.createElementNS(NAMESPACE.SVG, 'circle');
-    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_nw');
+    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_ne');
     this.renderer.setAttribute(resizeHandler, 'fill', '#22C');
     this.renderer.setAttribute(resizeHandler, 'stroke-width', '2');
     this.renderer.setAttribute(resizeHandler, 'r', '4');
@@ -77,7 +77,7 @@ export class SelectService {
     this.renderer.appendChild(handlerGroup, resizeHandler);
 
     resizeHandler = document.createElementNS(NAMESPACE.SVG, 'circle');
-    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_sw');
+    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_se');
     this.renderer.setAttribute(resizeHandler, 'fill', '#22C');
     this.renderer.setAttribute(resizeHandler, 'stroke-width', '2');
     this.renderer.setAttribute(resizeHandler, 'r', '4');
@@ -99,7 +99,7 @@ export class SelectService {
     this.renderer.appendChild(handlerGroup, resizeHandler);
 
     resizeHandler = document.createElementNS(NAMESPACE.SVG, 'circle');
-    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_se');
+    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_sw');
     this.renderer.setAttribute(resizeHandler, 'fill', '#22C');
     this.renderer.setAttribute(resizeHandler, 'stroke-width', '2');
     this.renderer.setAttribute(resizeHandler, 'r', '4');

@@ -1,36 +1,60 @@
 import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
-
-const NAMESPACE = {
-  SVG: 'http://www.w3.org/2000/svg'
-};
+import { NAMESPACE } from '../constants/namespace';
 
 @Injectable()
 export class SelectService {
  private renderer: Renderer2;
- public selectionBox;
+ public selectionBoxGroup: Element;
 
   constructor(private rendererFactory2: RendererFactory2) {
     this.renderer = this.rendererFactory2.createRenderer(null, null);
    }
 
-  public selectElement(event): Element {
+  public getSelectionBox(event): Element {
     const bBox = event.target.getBBox();
-    const parentGroup = document.createElementNS(NAMESPACE.SVG, 'g');
-    this.renderer.setAttribute(parentGroup, 'display', 'inline');
-    this.renderer.setAttribute(parentGroup, 'id', 'selectorGroup_0');
 
-    const selectBox = document.createElementNS(NAMESPACE.SVG, 'path');
-    this.renderer.setAttribute(selectBox, 'fill', 'none');
-    this.renderer.setAttribute(selectBox, 'stroke', '#22C');
-    this.renderer.setAttribute(selectBox, 'stroke-dasharray', '5, 5');
-    this.renderer.setAttribute(selectBox, 'style', 'pointer-events:none');
+    const selectorGroup = document.createElementNS(NAMESPACE.SVG, 'g');
+    this.renderer.setAttribute(selectorGroup, 'display', 'inline');
+    this.renderer.setAttribute(selectorGroup, 'id', 'selectorGroup_0');
+
+    const selectDottedBox = document.createElementNS(NAMESPACE.SVG, 'path');
+    this.renderer.setAttribute(selectDottedBox, 'fill', 'none');
+    this.renderer.setAttribute(selectDottedBox, 'stroke', '#22C');
+    this.renderer.setAttribute(selectDottedBox, 'stroke-dasharray', '5, 5');
+    this.renderer.setAttribute(selectDottedBox, 'style', 'pointer-events:none');
     const path = 'M' + (bBox.x - 0) + ' ' + (bBox.y - 0) + 'L' + (bBox.x + bBox.width + 0) + ' ' + (bBox.y - 0) + ' ' +
     (bBox.x + bBox.width + 0) + ' ' + (bBox.y + bBox.height + 0) + ' ' + (bBox.x - 0) + ' ' + (bBox.y + bBox.height + 0) + 'Z';
-    this.renderer.setAttribute(selectBox, 'd', path);
-    this.renderer.appendChild(parentGroup, selectBox);
+    this.renderer.setAttribute(selectDottedBox, 'd', path);
+    this.renderer.appendChild(selectorGroup, selectDottedBox);
 
+    if (event.ctrlKey) {
+      this.selectionBoxGroup = this.selectionBoxGroup ? this.selectionBoxGroup : this.getParentSelectorGroup();
+      // remove resize handler
+      const resizeHandler = this.selectionBoxGroup.getElementsByClassName('selectorHandlers');
+      if (resizeHandler.length > 0) {
+        this.selectionBoxGroup.firstChild.removeChild(resizeHandler[0]);
+      }
+      this.renderer.appendChild(this.selectionBoxGroup, selectorGroup);
+    } else {
+      this.renderer.appendChild(selectorGroup, this.getResizeHandler(bBox, selectorGroup));
+      this.selectionBoxGroup = this.getParentSelectorGroup();
+      this.renderer.appendChild(this.selectionBoxGroup, selectorGroup);
+    }
+
+    return this.selectionBoxGroup;
+  }
+
+  private getParentSelectorGroup(): Element {
+    const parentSelectorGroup = document.createElementNS(NAMESPACE.SVG, 'g');
+    this.renderer.setAttribute(parentSelectorGroup, 'id', 'parentSelectorGroup_0');
+    return parentSelectorGroup;
+  }
+
+  private getResizeHandler(bBox, selectorGroup): Element {
     const handlerGroup = document.createElementNS(NAMESPACE.SVG, 'g');
-    this.renderer.setAttribute(parentGroup, 'display', 'inline');
+    this.renderer.setAttribute(handlerGroup, 'display', 'inline');
+    this.renderer.setAttribute(handlerGroup, 'id', 'selectorHandlers');
+    this.renderer.setAttribute(handlerGroup, 'class', 'selectorHandlers');
 
     let resizeHandler = document.createElementNS(NAMESPACE.SVG, 'circle');
     this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_nw');
@@ -120,8 +144,6 @@ export class SelectService {
     this.renderer.setAttribute(resizeHandler, 'cy', (bBox.y + (bBox.height / 2)).toString());
     this.renderer.appendChild(handlerGroup, resizeHandler);
 
-    this.renderer.appendChild(parentGroup, handlerGroup);
-    this.selectionBox = parentGroup;
-    return parentGroup;
+    return handlerGroup;
   }
 }

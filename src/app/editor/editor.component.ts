@@ -1,11 +1,8 @@
 import { Component, OnInit, HostListener, Input, Renderer2, ViewChild, ElementRef, OnDestroy, RendererFactory2 } from '@angular/core';
-import { Subscription, Observable } from 'rxjs';
+import { Subscription, Observable, ReplaySubject } from 'rxjs';
 import { DrawingSettings } from '../models/drawing-settings';
 import { SelectService } from '../services/select.service';
-
-const NAMESPACE = {
-  SVG: 'http://www.w3.org/2000/svg'
-};
+import { NAMESPACE } from '../constants/namespace';
 
 @Component({
   selector: 'ng-editor',
@@ -13,27 +10,33 @@ const NAMESPACE = {
   styleUrls: ['./editor.component.css']
 })
 export class EditorComponent implements OnInit, OnDestroy {
-  @Input() selectedTool: string;
+  @Input() selectedTool: ReplaySubject<string>;
   @ViewChild('svg') svg: ElementRef;
   private renderer: Renderer2;
-  public selectedElements: Array<Element> = [];
+  private currentTool: string;
   private elemInConstruction: Element;
   private drawSettings: DrawingSettings;
   private mouseMoveSubscription: Subscription;
   private mouseUpSubscription: Subscription;
+  public selectedElements: Array<Element> = [];
 
   constructor(private rendererFactory: RendererFactory2, private selectService: SelectService) {
     this.renderer = this.rendererFactory.createRenderer(null, null);
-    this.drawSettings = new DrawingSettings(0, 'rgb(0, 0, 0)', 'none', '4');
+    this.drawSettings = new DrawingSettings(0, 'rgb(0, 0, 0)', 'white', '4');
    }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.selectedTool.subscribe(selectedTool => {
+      if (selectedTool !== 'select') {
+        this.clearSelection();
+      }
+      this.currentTool = selectedTool;
+    });
+  }
 
   @HostListener('mousedown', ['$event'])
   public onMouseDown(event: MouseEvent) {
-    this.clearSelection();
-
-    switch (this.selectedTool) {
+    switch (this.currentTool) {
       case 'rectangle': this.drawRectangle(event);
       break;
       case 'ellipse': this.drawEllipse(event);
@@ -46,23 +49,27 @@ export class EditorComponent implements OnInit, OnDestroy {
   private selectionMode(event) {
     this.selectedElements = [];
     if (event.target.tagName !== 'svg') {
+      if (!event.ctrlKey) {
+        // remove old selection box
+        this.clearSelection();
+      }
       // get Parent group Element
       this.getTargetElement(event);
-      // remove old selection box
-      this.clearSelection();
       // get selection box
-      const selectGroup = this.selectService.selectElement(event);
+      const selectGroup: Element = this.selectService.getSelectionBox(event);
       // add selection box
       this.renderer.appendChild(this.svg.nativeElement, selectGroup);
-      console.log('Select Box Added');
+    } else {
+      // remove old selection box
+      this.clearSelection();
     }
   }
 
-  private clearSelection() {
-    if (this.selectService.selectionBox) {
-      this.renderer.removeChild(this.svg.nativeElement, this.selectService.selectionBox);
+  public clearSelection() {
+    if (this.selectService.selectionBoxGroup) {
+      this.renderer.removeChild(this.svg.nativeElement, this.selectService.selectionBoxGroup);
     }
-    this.selectService.selectionBox = null;
+    this.selectService.selectionBoxGroup = null;
   }
 
   private getTargetElement(event) {

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { ReplaySubject } from 'rxjs';
 
 @Component({
   selector: 'ng-root',
@@ -7,9 +8,9 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   public editorTitle = 'AngularX Editor';
-  public selectedTool;
+  public selectedTool = new ReplaySubject<string>(1);
 
   public updateSelectedTool(tool: string) {
-    this.selectedTool = tool;
+    this.selectedTool.next(tool);
   }
 }

@@ -3,8 +3,8 @@ import { NAMESPACE } from '../constants/namespace';
 
 @Injectable()
 export class SelectService {
- private renderer: Renderer2;
- public selectionBoxGroup: Element;
+  private renderer: Renderer2;
+  public selectionBoxGroup: Element;
 
   constructor(private rendererFactory2: RendererFactory2) {
     this.renderer = this.rendererFactory2.createRenderer(null, null);
@@ -35,7 +35,7 @@ export class SelectService {
         this.selectionBoxGroup.firstChild.removeChild(resizeHandler[0]);
       }
       this.renderer.appendChild(this.selectionBoxGroup, selectorGroup);
-    } else {
+    } else if (!event.ctrlKey) {
       this.renderer.appendChild(selectorGroup, this.getResizeHandler(bBox, selectorGroup));
       this.selectionBoxGroup = this.getParentSelectorGroup();
       this.renderer.appendChild(this.selectionBoxGroup, selectorGroup);

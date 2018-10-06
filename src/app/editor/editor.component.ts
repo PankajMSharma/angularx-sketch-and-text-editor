@@ -41,28 +41,33 @@ export class EditorComponent implements OnInit, OnDestroy {
       break;
       case 'ellipse': this.drawEllipse(event);
       break;
-      default: this.selectionMode(event);
-      break;
+    }
+  }
+
+  @HostListener('click', ['$event'])
+  public onMouseClick(event: MouseEvent) {
+    if (this.currentTool === 'select') {
+      this.selectionMode(event);
     }
   }
 
   private selectionMode(event) {
-    this.selectedElements = [];
-    if (event.target.tagName !== 'svg') {
-      if (!event.ctrlKey) {
+      this.selectedElements = [];
+      if (event.target.tagName !== 'svg') {
+        if (!event.ctrlKey) {
+          // remove old selection box
+          this.clearSelection();
+        }
+        // get Parent group Element
+        this.getTargetElement(event);
+        // get selection box
+        const selectGroup: Element = this.selectService.getSelectionBox(event);
+        // add selection box
+        this.renderer.appendChild(this.svg.nativeElement, selectGroup);
+      } else {
         // remove old selection box
         this.clearSelection();
       }
-      // get Parent group Element
-      this.getTargetElement(event);
-      // get selection box
-      const selectGroup: Element = this.selectService.getSelectionBox(event);
-      // add selection box
-      this.renderer.appendChild(this.svg.nativeElement, selectGroup);
-    } else {
-      // remove old selection box
-      this.clearSelection();
-    }
   }
 
   public clearSelection() {

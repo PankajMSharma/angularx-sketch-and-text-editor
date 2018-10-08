@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { ToolState } from '../models/tool-state';
 
-const DEFAULT_TOOL = 'select';
+const DEFAULT_TOOL: string = 'select';
 
 @Component({
   selector: 'ng-editor-header',
@@ -21,12 +21,12 @@ export class EditorHeaderComponent implements OnInit {
     this.selectTool();
   }
 
-  public initializeTools() {
+  public initializeTools(): void {
     this.toolsNames.forEach(name => this.toolsState.push(new ToolState(name, 'enabled')));
     this.toolsState[2].state = 'selected';
   }
 
-  public selectTool(toolName?: string) {
+  public selectTool(toolName?: string): void {
     if (toolName) {
       this.toolsState.forEach(tool => {
           tool.toolName === toolName ? tool.state = 'selected' : tool.state = 'enabled';
@@ -53,11 +53,11 @@ export class EditorHeaderComponent implements OnInit {
     }
   }
 
-  public isSelectedTool(toolName: string) {
+  public isSelectedTool(toolName: string): boolean {
     return this.toolsState.findIndex(tool => toolName === tool.toolName && tool.state === 'selected') === -1 ? false : true;
   }
 
-  public isDisabled(toolName: string) {
+  public isDisabled(toolName: string): boolean {
     return this.toolsState.findIndex(tool => toolName === tool.toolName && tool.state === 'disabled') === -1 ? false : true;
   }
 

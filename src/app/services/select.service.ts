@@ -10,19 +10,19 @@ export class SelectService {
     this.renderer = this.rendererFactory2.createRenderer(null, null);
    }
 
-  public getSelectionBox(event): Element {
-    const bBox = event.target.getBBox();
+  public getSelectionBox(event: MouseEvent, targetElement: SVGGraphicsElement): Element {
+    const bBox = targetElement.getBBox();
 
-    const selectorGroup = document.createElementNS(NAMESPACE.SVG, 'g');
+    const selectorGroup: Element = document.createElementNS(NAMESPACE.SVG, 'g');
     this.renderer.setAttribute(selectorGroup, 'display', 'inline');
     this.renderer.setAttribute(selectorGroup, 'id', 'selectorGroup_0');
 
-    const selectDottedBox = document.createElementNS(NAMESPACE.SVG, 'path');
+    const selectDottedBox: Element = document.createElementNS(NAMESPACE.SVG, 'path');
     this.renderer.setAttribute(selectDottedBox, 'fill', 'none');
     this.renderer.setAttribute(selectDottedBox, 'stroke', '#22C');
     this.renderer.setAttribute(selectDottedBox, 'stroke-dasharray', '5, 5');
     this.renderer.setAttribute(selectDottedBox, 'style', 'pointer-events:none');
-    const path = 'M' + (bBox.x - 0) + ' ' + (bBox.y - 0) + 'L' + (bBox.x + bBox.width + 0) + ' ' + (bBox.y - 0) + ' ' +
+    const path: string = 'M' + (bBox.x - 0) + ' ' + (bBox.y - 0) + 'L' + (bBox.x + bBox.width + 0) + ' ' + (bBox.y - 0) + ' ' +
     (bBox.x + bBox.width + 0) + ' ' + (bBox.y + bBox.height + 0) + ' ' + (bBox.x - 0) + ' ' + (bBox.y + bBox.height + 0) + 'Z';
     this.renderer.setAttribute(selectDottedBox, 'd', path);
     this.renderer.appendChild(selectorGroup, selectDottedBox);
@@ -30,13 +30,13 @@ export class SelectService {
     if (event.ctrlKey) {
       this.selectionBoxGroup = this.selectionBoxGroup ? this.selectionBoxGroup : this.getParentSelectorGroup();
       // remove resize handler
-      const resizeHandler = this.selectionBoxGroup.getElementsByClassName('selectorHandlers');
+      const resizeHandler: NodeListOf<Element> = this.selectionBoxGroup.getElementsByClassName('selectorHandlers');
       if (resizeHandler.length > 0) {
         this.selectionBoxGroup.firstChild.removeChild(resizeHandler[0]);
       }
       this.renderer.appendChild(this.selectionBoxGroup, selectorGroup);
     } else if (!event.ctrlKey) {
-      this.renderer.appendChild(selectorGroup, this.getResizeHandler(bBox, selectorGroup));
+      this.renderer.appendChild(selectorGroup, this.getResizeHandler(bBox));
       this.selectionBoxGroup = this.getParentSelectorGroup();
       this.renderer.appendChild(this.selectionBoxGroup, selectorGroup);
     }
@@ -45,18 +45,18 @@ export class SelectService {
   }
 
   private getParentSelectorGroup(): Element {
-    const parentSelectorGroup = document.createElementNS(NAMESPACE.SVG, 'g');
+    const parentSelectorGroup: Element = document.createElementNS(NAMESPACE.SVG, 'g');
     this.renderer.setAttribute(parentSelectorGroup, 'id', 'parentSelectorGroup_0');
     return parentSelectorGroup;
   }
 
-  private getResizeHandler(bBox, selectorGroup): Element {
-    const handlerGroup = document.createElementNS(NAMESPACE.SVG, 'g');
+  private getResizeHandler(bBox): Element {
+    const handlerGroup: Element = document.createElementNS(NAMESPACE.SVG, 'g');
     this.renderer.setAttribute(handlerGroup, 'display', 'inline');
     this.renderer.setAttribute(handlerGroup, 'id', 'selectorHandlers');
     this.renderer.setAttribute(handlerGroup, 'class', 'selectorHandlers');
 
-    let resizeHandler = document.createElementNS(NAMESPACE.SVG, 'circle');
+    let resizeHandler: Element = document.createElementNS(NAMESPACE.SVG, 'circle');
     this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_nw');
     this.renderer.setAttribute(resizeHandler, 'fill', '#22C');
     this.renderer.setAttribute(resizeHandler, 'stroke-width', '2');

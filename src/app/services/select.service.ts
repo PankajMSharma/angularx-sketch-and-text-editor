@@ -1,29 +1,49 @@
 import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 import { NAMESPACE } from '../constants/namespace';
 
+const SELCTOR_OFFSET: number = 3;
+
 @Injectable()
 export class SelectService {
   private renderer: Renderer2;
-  public selectionBoxGroup: Element;
+  public selectionBoxGroup: SVGAElement;
 
   constructor(private rendererFactory2: RendererFactory2) {
     this.renderer = this.rendererFactory2.createRenderer(null, null);
    }
 
   public getSelectionBox(event: MouseEvent, targetElement: SVGGraphicsElement): Element {
-    const bBox = targetElement.getBBox();
+    const bBox: SVGRect = targetElement.getBBox();
 
     const selectorGroup: Element = document.createElementNS(NAMESPACE.SVG, 'g');
     this.renderer.setAttribute(selectorGroup, 'display', 'inline');
+    this.renderer.setAttribute(selectorGroup, 'position', 'absolute');
     this.renderer.setAttribute(selectorGroup, 'id', 'selectorGroup_0');
+
+    const selectTracerBox: Element = document.createElementNS(NAMESPACE.SVG, 'rect');
+    this.renderer.setAttribute(selectTracerBox, 'fill', 'none');
+    // this.renderer.setAttribute(selectTracerBox, 'display', 'none');
+    this.renderer.setAttribute(selectTracerBox, 'stroke', 'red');
+    this.renderer.setAttribute(selectTracerBox, 'stroke-width', '1');
+    this.renderer.setAttribute(selectTracerBox, 'x', (bBox.x - SELCTOR_OFFSET).toString());
+    this.renderer.setAttribute(selectTracerBox, 'y', (bBox.y - SELCTOR_OFFSET).toString());
+    this.renderer.setAttribute(selectTracerBox, 'width', (bBox.width + SELCTOR_OFFSET + SELCTOR_OFFSET).toString());
+    this.renderer.setAttribute(selectTracerBox, 'height', (bBox.height + SELCTOR_OFFSET + SELCTOR_OFFSET).toString());
+    this.renderer.setAttribute(selectTracerBox, 'pointer-events', 'none');
+    this.renderer.appendChild(selectorGroup, selectTracerBox);
 
     const selectDottedBox: Element = document.createElementNS(NAMESPACE.SVG, 'path');
     this.renderer.setAttribute(selectDottedBox, 'fill', 'none');
     this.renderer.setAttribute(selectDottedBox, 'stroke', '#22C');
     this.renderer.setAttribute(selectDottedBox, 'stroke-dasharray', '5, 5');
     this.renderer.setAttribute(selectDottedBox, 'style', 'pointer-events:none');
-    const path: string = 'M' + (bBox.x - 0) + ' ' + (bBox.y - 0) + 'L' + (bBox.x + bBox.width + 0) + ' ' + (bBox.y - 0) + ' ' +
-    (bBox.x + bBox.width + 0) + ' ' + (bBox.y + bBox.height + 0) + ' ' + (bBox.x - 0) + ' ' + (bBox.y + bBox.height + 0) + 'Z';
+    /* let path: string = 'M' + (bBox.x - 0) + ' ' + (bBox.y - 0) + 'L' + (bBox.x + bBox.width + 0) + ' ' + (bBox.y - 0) + ' ' +
+    (bBox.x + bBox.width + 0) + ' ' + (bBox.y + bBox.height + 0) + ' ' + (bBox.x - 0) + ' ' + (bBox.y + bBox.height + 0) + 'Z'; */
+    const path = 'M' + selectTracerBox.getAttribute('x') + ' ' + selectTracerBox.getAttribute('y') + 'L' +
+    (+selectTracerBox.getAttribute('x') + +selectTracerBox.getAttribute('width')) + ' ' + selectTracerBox.getAttribute('y') + ' ' +
+    (+selectTracerBox.getAttribute('x') + +selectTracerBox.getAttribute('width')) + ' ' +
+    (+selectTracerBox.getAttribute('y') + +selectTracerBox.getAttribute('height')) + ' ' +
+    selectTracerBox.getAttribute('x') + ' ' + (+selectTracerBox.getAttribute('y') + +selectTracerBox.getAttribute('height')) + 'Z';
     this.renderer.setAttribute(selectDottedBox, 'd', path);
     this.renderer.appendChild(selectorGroup, selectDottedBox);
 
@@ -44,10 +64,10 @@ export class SelectService {
     return this.selectionBoxGroup;
   }
 
-  private getParentSelectorGroup(): Element {
+  private getParentSelectorGroup(): SVGAElement {
     const parentSelectorGroup: Element = document.createElementNS(NAMESPACE.SVG, 'g');
     this.renderer.setAttribute(parentSelectorGroup, 'id', 'parentSelectorGroup_0');
-    return parentSelectorGroup;
+    return parentSelectorGroup as SVGAElement;
   }
 
   private getResizeHandler(bBox): Element {

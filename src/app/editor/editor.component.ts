@@ -43,23 +43,14 @@ export class EditorComponent implements OnInit, OnDestroy {
       break;
       case 'ellipse': this.drawEllipse(event);
       break;
-      default: this.dragElements(event);
+      default: this.selectionMode(event);
       break;
     }
   }
 
-  @HostListener('click', ['$event'])
-  public onMouseClick(event: MouseEvent) {
-    event.preventDefault();
-    if (this.currentTool === 'select') {
-      this.selectionMode(event);
-    }
-  }
-
   private dragElements(event: MouseEvent): void {
-    // check if element is selected -------------------
+    // check if element is selected
     if (this.isSelectedElement(event.target as Element)) {
-      console.log(this.selectedElements);
       let pos1: number = 0;
       let pos2: number = 0;
       let pos3: number = 0;
@@ -67,12 +58,11 @@ export class EditorComponent implements OnInit, OnDestroy {
       // get the mouse cursor position at start
       pos1 = event.clientX;
       pos2 = event.clientY;
-      // console.log('subscription Move', this.mouseMoveSubscription);
-      // console.log('subscription Up', this.mouseUpSubscription);
+      // will make it better later ----------------
       this.mouseMoveSubscription.unsubscribe();
-      // console.log('subscription Move1', this.mouseMoveSubscription);
       this.mouseMoveSubscription = Observable.fromEvent(this.svg.nativeElement, 'mousemove').subscribe((moveEvent: MouseEvent) => {
         moveEvent.preventDefault();
+        moveEvent.stopPropagation();
         pos3 = pos1 - moveEvent.clientX;
         pos4 = pos2 - moveEvent.clientY;
         pos1 = moveEvent.clientX;
@@ -87,21 +77,41 @@ export class EditorComponent implements OnInit, OnDestroy {
             break;
           }
         });
-        // drag selection box group
-          const paths = this.selectService.selectionBoxGroup.getElementsByTagName('path');
-        for (let i = 0; i < paths.length; i++) {
-          this.renderer.setAttribute(paths[i], 'clientLeft',
-          (+paths[i].getAttribute('cx') - pos3).toString());
-          this.renderer.setAttribute(paths[i], 'clientTop',
-          (+paths[i].getAttribute('cy') - pos3).toString());
+
+        const selectorElems: HTMLCollection = this.selectService.selectionBoxGroup.children;
+
+        for (let i = 0; i < selectorElems.length; i++) {
+          this.dragSelectorBox(selectorElems[i], pos3, pos4);
         }
       });
       this.mouseUpSubscription = fromEvent(document, 'mouseup').subscribe((moveUp: MouseEvent) => {
         if (this.mouseMoveSubscription && !this.mouseMoveSubscription.closed) {
           this.mouseMoveSubscription.unsubscribe();
-          // console.log('move unsubs', this.mouseMoveSubscription);
         }
       });
+    }
+  }
+
+  private dragSelectorBox(group: Element, pos3: number, pos4: number): void {
+    if (group.getElementsByTagName('path')) {
+      const path: SVGPathElement = group.getElementsByTagName('path')[0];
+      const d: String = path.getAttribute('d');
+      const dValues: number[] = d.match(/\d+/g).map(Number);
+      const pathArr: number[] = [];
+      for (let i = 0; i < dValues.length; i++) {
+        pathArr.push((i % 2 === 0) ? (dValues[i] - pos3) : (dValues[i] - pos4));
+      }
+      const pathD: string = 'M' + pathArr[0] + ',' + pathArr[1] + 'L' + pathArr[2] + ',' + pathArr[3] + ',' + pathArr[4] + ',' + pathArr[5]
+      + ',' + pathArr[6] + ',' + pathArr[7] + 'Z';
+      this.renderer.setAttribute(path, 'd', pathD);
+    }
+    if (group.getElementsByTagName('g').length > 0) {
+      const rh: NodeListOf<Element> = group.getElementsByTagName('g').item(0).getElementsByTagName('circle');
+      for (let i = 0; i < rh.length; i++) {
+        const elmnt = rh[i]as Element;
+        this.renderer.setAttribute(elmnt, 'cx', (+elmnt.getAttribute('cx') - pos3).toString());
+        this.renderer.setAttribute(elmnt, 'cy', (+elmnt.getAttribute('cy') - pos4).toString());
+      }
     }
   }
 
@@ -125,24 +135,28 @@ export class EditorComponent implements OnInit, OnDestroy {
   }
 
   private selectionMode(event: MouseEvent): void {
-      // this.selectedElements = [];
-      const target: HTMLElement = event.target as HTMLElement;
-      if (target.tagName !== 'svg') {
-        if (!event.ctrlKey) {
+    Observable.fromEvent(this.getTargetElement(event), 'mouseup').subscribe((mouseUp: MouseEvent) => {
+      if ((event.pageX === mouseUp.pageX) && (event.pageY === mouseUp.pageY)) {
+        const target: HTMLElement = event.target as HTMLElement;
+        if (target.tagName !== 'svg') {
+          if (!event.ctrlKey) {
+            // remove old selection box
+            this.clearSelection();
+          }
+          // get Parent group Element
+          const targetElement: SVGAElement = this.getTargetElement(event);
+          // get selection box
+          const selectGroup: Element = this.selectService.getSelectionBox(event, targetElement);
+          // add selection box
+          this.renderer.appendChild(this.svg.nativeElement, selectGroup);
+          this.selectedElements.push(targetElement);
+        } else {
           // remove old selection box
           this.clearSelection();
         }
-        // get Parent group Element
-        const targetElement: SVGAElement = this.getTargetElement(event);
-        // get selection box
-        const selectGroup: Element = this.selectService.getSelectionBox(event, targetElement);
-        // add selection box
-        this.renderer.appendChild(this.svg.nativeElement, selectGroup);
-        this.selectedElements.push(targetElement);
-      } else {
-        // remove old selection box
-        this.clearSelection();
       }
+    });
+    this.dragElements(event);
   }
 
   /*
@@ -156,6 +170,9 @@ export class EditorComponent implements OnInit, OnDestroy {
     this.selectedElements = [];
   }
 
+  /*
+  ** Gets target element or the target group for event
+  */
   private getTargetElement(event: MouseEvent): SVGAElement {
     let currElem: Element = event.target as Element;
     let targetElem: Element = currElem;
@@ -175,11 +192,9 @@ export class EditorComponent implements OnInit, OnDestroy {
       this.elemInConstruction = null;
       if (this.mouseMoveSubscription && !this.mouseMoveSubscription.closed) {
         this.mouseMoveSubscription.unsubscribe();
-        // console.log('move unsubs host', this.mouseMoveSubscription);
       }
       if (this.mouseUpSubscription && !this.mouseUpSubscription.closed) {
         this.mouseUpSubscription.unsubscribe();
-        // console.log('up unsubs host', this.mouseMoveSubscription);
       }
     }
   }

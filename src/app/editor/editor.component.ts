@@ -4,6 +4,8 @@ import { DrawingSettings } from '../models/drawing-settings';
 import { SelectService } from '../services/select.service';
 import { NAMESPACE } from '../constants/namespace';
 import { fromEvent } from 'rxjs/observable/fromEvent';
+import { gobbleEvent } from '../utils/event.utils';
+// import { killEvent } from '../utils/event.utils';
 
 @Component({
   selector: 'ng-editor',
@@ -19,7 +21,7 @@ export class EditorComponent implements OnInit, OnDestroy {
   private drawSettings: DrawingSettings;
   private mouseMoveSubscription: Subscription;
   private mouseUpSubscription: Subscription;
-  public selectedElements: Array<SVGAElement> = [];
+  public selectedElements: Array<SVGElement> = [];
 
   constructor(private rendererFactory: RendererFactory2, private selectService: SelectService) {
     this.renderer = this.rendererFactory.createRenderer(null, null);
@@ -37,7 +39,8 @@ export class EditorComponent implements OnInit, OnDestroy {
 
   @HostListener('mousedown', ['$event'])
   public onMouseDown(event: MouseEvent) {
-    event.preventDefault();
+    gobbleEvent(event);
+
     switch (this.currentTool) {
       case 'rectangle': this.drawRectangle(event);
       break;
@@ -55,25 +58,29 @@ export class EditorComponent implements OnInit, OnDestroy {
       let pos2: number = 0;
       let pos3: number = 0;
       let pos4: number = 0;
+
       // get the mouse cursor position at start
       pos1 = event.clientX;
       pos2 = event.clientY;
-      // will make it better later ----------------
-      this.mouseMoveSubscription.unsubscribe();
+
+      if (this.mouseMoveSubscription && !this.mouseMoveSubscription.closed) {
+        this.mouseMoveSubscription.unsubscribe();
+      }
+
       this.mouseMoveSubscription = Observable.fromEvent(this.svg.nativeElement, 'mousemove').subscribe((moveEvent: MouseEvent) => {
-        moveEvent.preventDefault();
-        moveEvent.stopPropagation();
+        gobbleEvent(event);
+
         pos3 = pos1 - moveEvent.clientX;
         pos4 = pos2 - moveEvent.clientY;
         pos1 = moveEvent.clientX;
         pos2 = moveEvent.clientY;
 
         // drag for each selected element
-        this.selectedElements.forEach((elem: SVGAElement) => {
+        this.selectedElements.forEach((elem: SVGElement) => {
           switch (elem.tagName) {
-            case 'ellipse': this.dragEllipse(elem, pos3, pos4);
+            case 'ellipse': this.dragEllipse(elem as SVGEllipseElement, pos3, pos4);
             break;
-            case 'rect': this.dragRectangle(elem, pos3, pos4);
+            case 'rect': this.dragRectangle(elem as SVGRectElement, pos3, pos4);
             break;
           }
         });
@@ -84,10 +91,12 @@ export class EditorComponent implements OnInit, OnDestroy {
           this.dragSelectorBox(selectorElems[i], pos3, pos4);
         }
       });
+
       this.mouseUpSubscription = fromEvent(document, 'mouseup').subscribe((moveUp: MouseEvent) => {
         if (this.mouseMoveSubscription && !this.mouseMoveSubscription.closed) {
           this.mouseMoveSubscription.unsubscribe();
         }
+
       });
     }
   }
@@ -98,15 +107,20 @@ export class EditorComponent implements OnInit, OnDestroy {
       const d: String = path.getAttribute('d');
       const dValues: number[] = d.match(/\d+/g).map(Number);
       const pathArr: number[] = [];
+
       for (let i = 0; i < dValues.length; i++) {
         pathArr.push((i % 2 === 0) ? (dValues[i] - pos3) : (dValues[i] - pos4));
       }
+
       const pathD: string = 'M' + pathArr[0] + ',' + pathArr[1] + 'L' + pathArr[2] + ',' + pathArr[3] + ',' + pathArr[4] + ',' + pathArr[5]
       + ',' + pathArr[6] + ',' + pathArr[7] + 'Z';
+
       this.renderer.setAttribute(path, 'd', pathD);
     }
+
     if (group.getElementsByTagName('g').length > 0) {
       const rh: NodeListOf<Element> = group.getElementsByTagName('g').item(0).getElementsByTagName('circle');
+
       for (let i = 0; i < rh.length; i++) {
         const elmnt = rh[i]as Element;
         this.renderer.setAttribute(elmnt, 'cx', (+elmnt.getAttribute('cx') - pos3).toString());
@@ -115,41 +129,48 @@ export class EditorComponent implements OnInit, OnDestroy {
     }
   }
 
-  private dragEllipse (elem: SVGAElement, pos3: number, pos4: number): void {
+  private dragEllipse (elem: SVGEllipseElement, pos3: number, pos4: number): void {
     // set the element's new position
     this.renderer.setAttribute(elem, 'cx', (+elem.getAttribute('cx') - pos3).toString());
     this.renderer.setAttribute(elem, 'cy', (+elem.getAttribute('cy') - pos4).toString());
   }
 
-  private dragRectangle (elem: SVGAElement, pos3: number, pos4: number): void {
+  private dragRectangle (elem: SVGRectElement, pos3: number, pos4: number): void {
     // set the element's new position
     this.renderer.setAttribute(elem, 'x', (+elem.getAttribute('x') - pos3).toString());
     this.renderer.setAttribute(elem, 'y', (+elem.getAttribute('y') - pos4).toString());
   }
 
-  /*
-  ** Checks if the given element is selected
+  /**
+  * Checks if the given element is selected
+  *
+  * @param elem
   */
   private isSelectedElement(elem: Element): boolean {
-    return this.selectedElements.includes(elem as SVGAElement) ? true : false;
+    return this.selectedElements.includes(elem as SVGElement) ? true : false;
   }
 
   private selectionMode(event: MouseEvent): void {
     Observable.fromEvent(this.getTargetElement(event), 'mouseup').subscribe((mouseUp: MouseEvent) => {
       if ((event.pageX === mouseUp.pageX) && (event.pageY === mouseUp.pageY)) {
         const target: HTMLElement = event.target as HTMLElement;
+
         if (target.tagName !== 'svg') {
           if (!event.ctrlKey) {
             // remove old selection box
             this.clearSelection();
           }
+
           // get Parent group Element
-          const targetElement: SVGAElement = this.getTargetElement(event);
+          const targetElement: SVGElement = this.getTargetElement(event);
           // get selection box
-          const selectGroup: Element = this.selectService.getSelectionBox(event, targetElement);
+          const selectGroup: Element = this.selectService.getSelectionBox(event, targetElement as SVGGraphicsElement);
           // add selection box
           this.renderer.appendChild(this.svg.nativeElement, selectGroup);
-          this.selectedElements.push(targetElement);
+
+          if (!this.isSelectedElement(targetElement)) {
+            this.selectedElements.push(targetElement);
+          }
         } else {
           // remove old selection box
           this.clearSelection();
@@ -159,40 +180,47 @@ export class EditorComponent implements OnInit, OnDestroy {
     this.dragElements(event);
   }
 
-  /*
-  ** Removes selection box
+  /**
+  * Removes selection box
   */
   public clearSelection(): void {
     if (this.selectService.selectionBoxGroup) {
       this.renderer.removeChild(this.svg.nativeElement, this.selectService.selectionBoxGroup);
     }
+
     this.selectService.selectionBoxGroup = null;
     this.selectedElements = [];
   }
 
-  /*
-  ** Gets target element or the target group for event
+  /**
+  * Gets target element or the target group for event
   */
-  private getTargetElement(event: MouseEvent): SVGAElement {
+  private getTargetElement(event: MouseEvent): SVGElement {
     let currElem: Element = event.target as Element;
     let targetElem: Element = currElem;
+
     while (currElem.nodeName !== 'svg') {
       currElem = currElem.parentElement;
+
       if (currElem.nodeName === 'g') {
         targetElem = currElem;
       }
     }
-    return targetElem as SVGAElement;
+
+    return targetElem as SVGElement;
   }
 
   @HostListener('mouseup', ['$event'])
   public onMouseUp(event: MouseEvent) {
     event.preventDefault();
+
     if (this.elemInConstruction) {
       this.elemInConstruction = null;
+
       if (this.mouseMoveSubscription && !this.mouseMoveSubscription.closed) {
         this.mouseMoveSubscription.unsubscribe();
       }
+
       if (this.mouseUpSubscription && !this.mouseUpSubscription.closed) {
         this.mouseUpSubscription.unsubscribe();
       }
@@ -200,8 +228,8 @@ export class EditorComponent implements OnInit, OnDestroy {
   }
 
   private drawRectangle(event: MouseEvent): void {
-    let x: number;
-    let y: number;
+    let x: number, y: number;
+
     if (!this.elemInConstruction) {
       const elem: Element = document.createElementNS(NAMESPACE.SVG, 'rect');
       this.renderer.setAttribute(elem, 'x', event.clientX.toString());
@@ -218,6 +246,7 @@ export class EditorComponent implements OnInit, OnDestroy {
       x = +this.elemInConstruction.getAttribute('x');
       y = +this.elemInConstruction.getAttribute('y');
     }
+
     this.mouseMoveSubscription = Observable.fromEvent(this.svg.nativeElement, 'mousemove').subscribe((moveEvent: MouseEvent) => {
       if (this.elemInConstruction) {
         const width: number = moveEvent.clientX - x;
@@ -228,6 +257,7 @@ export class EditorComponent implements OnInit, OnDestroy {
         this.renderer.setAttribute(this.elemInConstruction, 'height', ((height > 0) ? height : (-1 * height)).toString());
       }
     });
+
     this.mouseUpSubscription = Observable.fromEvent(this.svg.nativeElement, 'mouseup').subscribe((UpEvent: MouseEvent) => {
       const width: number = UpEvent.clientX - x;
       const height: number = UpEvent.clientY - y;
@@ -238,8 +268,8 @@ export class EditorComponent implements OnInit, OnDestroy {
   }
 
   public drawEllipse(event: MouseEvent): void {
-    let cx: number;
-    let cy: number;
+    let cx: number, cy: number;
+
     if (!this.elemInConstruction) {
       const elem: Element = document.createElementNS(NAMESPACE.SVG, 'ellipse');
       this.renderer.setAttribute(elem, 'cx', event.clientX.toString());
@@ -256,6 +286,7 @@ export class EditorComponent implements OnInit, OnDestroy {
       cx = +this.elemInConstruction.getAttribute('cx');
       cy = +this.elemInConstruction.getAttribute('cy');
     }
+
     this.mouseMoveSubscription = Observable.fromEvent(this.svg.nativeElement, 'mousemove').subscribe((moveEvent: MouseEvent) => {
       if (this.elemInConstruction) {
       const rx: number = moveEvent.clientX - cx;
@@ -264,9 +295,11 @@ export class EditorComponent implements OnInit, OnDestroy {
       this.renderer.setAttribute(this.elemInConstruction, 'ry', ((ry > 0) ? ry : (-1 * ry)).toString());
       }
     });
+
     this.mouseUpSubscription = Observable.fromEvent(this.svg.nativeElement, 'mouseup').subscribe((UpEvent: MouseEvent) => {
       const rx: number = UpEvent.clientX - cx;
       const ry: number = UpEvent.clientY - cy;
+
       if ((!rx || !ry) && this.elemInConstruction) {
         this.renderer.removeChild(this.svg.nativeElement, this.elemInConstruction);
       } else {
@@ -285,6 +318,7 @@ export class EditorComponent implements OnInit, OnDestroy {
     if (this.mouseMoveSubscription && !this.mouseMoveSubscription.closed) {
       this.mouseMoveSubscription.unsubscribe();
     }
+
     if (this.mouseUpSubscription && !this.mouseUpSubscription.closed) {
       this.mouseUpSubscription.unsubscribe();
     }

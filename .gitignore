@@ -18,6 +18,9 @@
 .settings/
 *.sublime-workspace
 
+# documentation
+/documentation/
+
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json

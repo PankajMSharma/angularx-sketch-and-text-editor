@@ -1,11 +1,14 @@
 import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
-import { NAMESPACE } from '../constants/namespace';
+import { NAMESPACE, RESIZE_HANDLERS, RESIZE_HANDLER_ATTRS } from '../constants/namespace';
+import { SelectorSettings } from '../models/selector-settings';
+import { RESIZE_HANDLERS_FUNCTIONS } from './del';
 
 const SELCTOR_OFFSET: number = 3;
 
 @Injectable()
 export class SelectService {
   private renderer: Renderer2;
+  private selectorSettings: SelectorSettings = new SelectorSettings();
   public selectionBoxGroup: SVGAElement;
 
   constructor(private rendererFactory2: RendererFactory2) {
@@ -20,10 +23,11 @@ export class SelectService {
     this.renderer.setAttribute(selectorGroup, 'id', 'selectorGroup_0');
 
     const selectDottedBox: Element = document.createElementNS(NAMESPACE.SVG, 'path');
-    this.renderer.setAttribute(selectDottedBox, 'fill', 'none');
-    this.renderer.setAttribute(selectDottedBox, 'stroke', '#22C');
+    this.renderer.setAttribute(selectDottedBox, 'fill', this.selectorSettings.selectorBoxFill);
+    this.renderer.setAttribute(selectDottedBox, 'stroke', this.selectorSettings.stroke);
     this.renderer.setAttribute(selectDottedBox, 'stroke-dasharray', '5, 5');
     this.renderer.setAttribute(selectDottedBox, 'style', 'pointer-events:none');
+    // const sOffset: string = this.
     const path: string = 'M' + (bBox.x - SELCTOR_OFFSET) + ',' + (bBox.y - SELCTOR_OFFSET)
     + 'L' + (bBox.x + bBox.width + SELCTOR_OFFSET) + ',' + (bBox.y - SELCTOR_OFFSET)
     + ',' + (bBox.x + bBox.width + SELCTOR_OFFSET) + ',' + (bBox.y + bBox.height + SELCTOR_OFFSET)
@@ -38,9 +42,11 @@ export class SelectService {
       if (resizeHandler.length > 0) {
         this.renderer.setAttribute(resizeHandler[0], 'display', 'none');
       }
+
       this.renderer.appendChild(this.selectionBoxGroup, selectorGroup);
       return this.selectionBoxGroup;
     } else if (!event.ctrlKey) {
+
       this.renderer.appendChild(selectorGroup, this.getResizeHandler(bBox));
       this.selectionBoxGroup = this.getParentSelectorGroup();
       this.renderer.appendChild(this.selectionBoxGroup, selectorGroup);
@@ -64,94 +70,35 @@ export class SelectService {
     this.renderer.setAttribute(handlerGroup, 'id', 'selectorHandlers');
     this.renderer.setAttribute(handlerGroup, 'class', 'selectorHandlers');
 
-    let resizeHandler: Element = document.createElementNS(NAMESPACE.SVG, 'circle');
-    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_nw');
-    this.renderer.setAttribute(resizeHandler, 'fill', '#22C');
-    this.renderer.setAttribute(resizeHandler, 'stroke-width', '2');
-    this.renderer.setAttribute(resizeHandler, 'r', '4');
-    this.renderer.setAttribute(resizeHandler, 'style', 'cursor:nw-resize');
-    this.renderer.setAttribute(resizeHandler, 'pointer-events', 'all');
-    this.renderer.setAttribute(resizeHandler, 'cx', bBox.x.toString());
-    this.renderer.setAttribute(resizeHandler, 'cy', bBox.y.toString());
-    this.renderer.appendChild(handlerGroup, resizeHandler);
-
-    resizeHandler = document.createElementNS(NAMESPACE.SVG, 'circle');
-    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_n');
-    this.renderer.setAttribute(resizeHandler, 'fill', '#22C');
-    this.renderer.setAttribute(resizeHandler, 'stroke-width', '2');
-    this.renderer.setAttribute(resizeHandler, 'r', '4');
-    this.renderer.setAttribute(resizeHandler, 'style', 'cursor:n-resize');
-    this.renderer.setAttribute(resizeHandler, 'pointer-events', 'all');
-    this.renderer.setAttribute(resizeHandler, 'cx', (bBox.x + (bBox.width / 2)).toString());
-    this.renderer.setAttribute(resizeHandler, 'cy', bBox.y.toString());
-    this.renderer.appendChild(handlerGroup, resizeHandler);
-
-    resizeHandler = document.createElementNS(NAMESPACE.SVG, 'circle');
-    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_ne');
-    this.renderer.setAttribute(resizeHandler, 'fill', '#22C');
-    this.renderer.setAttribute(resizeHandler, 'stroke-width', '2');
-    this.renderer.setAttribute(resizeHandler, 'r', '4');
-    this.renderer.setAttribute(resizeHandler, 'style', 'cursor:ne-resize');
-    this.renderer.setAttribute(resizeHandler, 'pointer-events', 'all');
-    this.renderer.setAttribute(resizeHandler, 'cx', (bBox.x + bBox.width).toString());
-    this.renderer.setAttribute(resizeHandler, 'cy', bBox.y.toString());
-    this.renderer.appendChild(handlerGroup, resizeHandler);
-
-    resizeHandler = document.createElementNS(NAMESPACE.SVG, 'circle');
-    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_w');
-    this.renderer.setAttribute(resizeHandler, 'fill', '#22C');
-    this.renderer.setAttribute(resizeHandler, 'stroke-width', '2');
-    this.renderer.setAttribute(resizeHandler, 'r', '4');
-    this.renderer.setAttribute(resizeHandler, 'style', 'cursor:w-resize');
-    this.renderer.setAttribute(resizeHandler, 'pointer-events', 'all');
-    this.renderer.setAttribute(resizeHandler, 'cx', (bBox.x + bBox.width).toString());
-    this.renderer.setAttribute(resizeHandler, 'cy', (bBox.y + (bBox.height / 2)).toString());
-    this.renderer.appendChild(handlerGroup, resizeHandler);
-
-    resizeHandler = document.createElementNS(NAMESPACE.SVG, 'circle');
-    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_se');
-    this.renderer.setAttribute(resizeHandler, 'fill', '#22C');
-    this.renderer.setAttribute(resizeHandler, 'stroke-width', '2');
-    this.renderer.setAttribute(resizeHandler, 'r', '4');
-    this.renderer.setAttribute(resizeHandler, 'style', 'cursor:se-resize');
-    this.renderer.setAttribute(resizeHandler, 'pointer-events', 'all');
-    this.renderer.setAttribute(resizeHandler, 'cx', (bBox.x + bBox.width).toString());
-    this.renderer.setAttribute(resizeHandler, 'cy', (bBox.y + bBox.height).toString());
-    this.renderer.appendChild(handlerGroup, resizeHandler);
-
-    resizeHandler = document.createElementNS(NAMESPACE.SVG, 'circle');
-    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_s');
-    this.renderer.setAttribute(resizeHandler, 'fill', '#22C');
-    this.renderer.setAttribute(resizeHandler, 'stroke-width', '2');
-    this.renderer.setAttribute(resizeHandler, 'r', '4');
-    this.renderer.setAttribute(resizeHandler, 'style', 'cursor:s-resize');
-    this.renderer.setAttribute(resizeHandler, 'pointer-events', 'all');
-    this.renderer.setAttribute(resizeHandler, 'cx', (bBox.x + (bBox.width / 2)).toString());
-    this.renderer.setAttribute(resizeHandler, 'cy', (bBox.y + bBox.height).toString());
-    this.renderer.appendChild(handlerGroup, resizeHandler);
-
-    resizeHandler = document.createElementNS(NAMESPACE.SVG, 'circle');
-    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_sw');
-    this.renderer.setAttribute(resizeHandler, 'fill', '#22C');
-    this.renderer.setAttribute(resizeHandler, 'stroke-width', '2');
-    this.renderer.setAttribute(resizeHandler, 'r', '4');
-    this.renderer.setAttribute(resizeHandler, 'style', 'cursor:sw-resize');
-    this.renderer.setAttribute(resizeHandler, 'pointer-events', 'all');
-    this.renderer.setAttribute(resizeHandler, 'cx', bBox.x.toString());
-    this.renderer.setAttribute(resizeHandler, 'cy', (bBox.y + bBox.height).toString());
-    this.renderer.appendChild(handlerGroup, resizeHandler);
-
-    resizeHandler = document.createElementNS(NAMESPACE.SVG, 'circle');
-    this.renderer.setAttribute(resizeHandler, 'id', 'selectorHandle_e');
-    this.renderer.setAttribute(resizeHandler, 'fill', '#22C');
-    this.renderer.setAttribute(resizeHandler, 'stroke-width', '2');
-    this.renderer.setAttribute(resizeHandler, 'r', '4');
-    this.renderer.setAttribute(resizeHandler, 'style', 'cursor:e-resize');
-    this.renderer.setAttribute(resizeHandler, 'pointer-events', 'all');
-    this.renderer.setAttribute(resizeHandler, 'cx', bBox.x.toString());
-    this.renderer.setAttribute(resizeHandler, 'cy', (bBox.y + (bBox.height / 2)).toString());
-    this.renderer.appendChild(handlerGroup, resizeHandler);
+    const handlerAttr: Array<Map<string, string>> = this.getResizeHandlerConfig(bBox);
+    handlerAttr.forEach((shapeAttrs: Map<string, string>) => {
+      this.renderer.appendChild(handlerGroup, this.createSVGElement('circle', shapeAttrs));
+    });
 
     return handlerGroup;
+  }
+
+  private getResizeHandlerConfig(bBox: SVGRect): Array<Map<string, string>> {
+    const dataArr: Array<Map<string, string>> = new Array();
+    let dataMap: Map<string, string>;
+
+    Object.keys(RESIZE_HANDLERS).forEach((dir: string) => {
+      dataMap = new Map();
+      RESIZE_HANDLERS_FUNCTIONS[dir](dataMap, bBox);
+
+      Object.keys(RESIZE_HANDLER_ATTRS).forEach((attr: string) => {
+        RESIZE_HANDLERS_FUNCTIONS[dir](dataMap, bBox);
+      });
+      dataArr.push(dataMap);
+    });
+    return dataArr;
+  }
+
+  private createSVGElement(tagName: string, data: Map<string, string>): Element {
+    const shape: Element = document.createElementNS(NAMESPACE.SVG, tagName);
+    data.forEach((value: string, key: string) => {
+      this.renderer.setAttribute(shape, key, value);
+    });
+    return shape;
   }
 }

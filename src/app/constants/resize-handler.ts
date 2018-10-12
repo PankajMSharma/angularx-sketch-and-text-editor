@@ -1,9 +1,10 @@
 import { RESIZE_HANDLER_ATTRS, RESIZE_HANDLERS } from '../constants/namespace';
+import { SelectorSettings } from '../models/selector-settings';
 
 const CX = 'cx';
 const CY = 'cy';
 
-export const RESIZE_HANDLERS_FUNCTIONS = {
+export const RESIZE_HANDLERS_POS_FUNCS = {
     NW: (dataMap, bBox) => {
         dataMap.set(CX, bBox.x.toString());
         dataMap.set(CY, bBox.y.toString());
@@ -35,23 +36,26 @@ export const RESIZE_HANDLERS_FUNCTIONS = {
     W: (dataMap, bBox) => {
         dataMap.set(CX, (bBox.x + bBox.width).toString());
         dataMap.set(CY, (bBox.y + (bBox.height / 2)).toString());
+    }
+};
+
+export const RESIZE_HANDLERS_ATTR_FUNC = {
+    FILL: (dataMap: Map<string, string>, attr: string, setting: SelectorSettings, dir?: string) => {
+        dataMap.set(RESIZE_HANDLER_ATTRS[attr], setting.circleFill);
     },
-    FILL: (dataMap, bBox, attr) => {
-        dataMap.set(RESIZE_HANDLER_ATTRS[attr], this.selectorSettings.circleFill);
+    STROKEWIDTH: (dataMap: Map<string, string>, attr: string, setting: SelectorSettings, dir?: string) => {
+        dataMap.set(RESIZE_HANDLER_ATTRS[attr], setting.strokeWidth);
     },
-    STROKE_WIDTH: (dataMap, bBox, attr) => {
-        dataMap.set(RESIZE_HANDLER_ATTRS[attr], this.selectorSettings.strokeWidth);
+    POINTEREVENTS: (dataMap: Map<string, string>, attr: string, setting: SelectorSettings, dir?: string) => {
+        dataMap.set(RESIZE_HANDLER_ATTRS[attr], setting.pointerEvents);
     },
-    POINTER_EVENTS: (dataMap, bBox, attr) => {
-        dataMap.set(RESIZE_HANDLER_ATTRS[attr], this.selectorSettings.pointerEvents);
+    R: (dataMap: Map<string, string>, attr: string, setting: SelectorSettings, dir?: string) => {
+        dataMap.set(RESIZE_HANDLER_ATTRS[attr], setting.circleRadius);
     },
-    CIRCLE_RADIUS: (dataMap, bBox, attr) => {
-        dataMap.set(RESIZE_HANDLER_ATTRS[attr], this.selectorSettings.circleRadius);
-    },
-    ID: (dataMap, bBox, attr, dir?) => {
+    ID: (dataMap: Map<string, string>, attr: string, setting?: SelectorSettings, dir?: string) => {
         dataMap.set(RESIZE_HANDLER_ATTRS[attr], 'selectorHandle_' + RESIZE_HANDLERS[dir]);
     },
-    STYLE: (dataMap, bBox, attr, dir?) => {
+    STYLE: (dataMap: Map<string, string>, attr: string, setting?: SelectorSettings, dir?: string) => {
         dataMap.set(RESIZE_HANDLER_ATTRS[attr], 'cursor:' + RESIZE_HANDLERS[dir] + '-resize');
-    },
+    }
 };

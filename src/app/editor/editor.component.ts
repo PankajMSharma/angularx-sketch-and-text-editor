@@ -5,7 +5,6 @@ import { SelectService } from '../services/select.service';
 import { NAMESPACE } from '../constants/namespace';
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { gobbleEvent } from '../utils/event.utils';
-// import { killEvent } from '../utils/event.utils';
 
 @Component({
   selector: 'ng-editor',
@@ -25,7 +24,7 @@ export class EditorComponent implements OnInit, OnDestroy {
 
   constructor(private rendererFactory: RendererFactory2, private selectService: SelectService) {
     this.renderer = this.rendererFactory.createRenderer(null, null);
-    this.drawSettings = new DrawingSettings(0, 'rgb(0, 0, 0)', 'white', '4');
+    this.drawSettings = DrawingSettings.getInstance(0, 'rgb(0, 0, 0)', 'white', '4');
    }
 
   ngOnInit() {

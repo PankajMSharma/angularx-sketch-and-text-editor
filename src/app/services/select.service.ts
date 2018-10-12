@@ -1,14 +1,14 @@
 import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 import { NAMESPACE, RESIZE_HANDLERS, RESIZE_HANDLER_ATTRS } from '../constants/namespace';
 import { SelectorSettings } from '../models/selector-settings';
-import { RESIZE_HANDLERS_FUNCTIONS } from './del';
-
-const SELCTOR_OFFSET: number = 3;
+import { RESIZE_HANDLERS_ATTR_FUNC, RESIZE_HANDLERS_POS_FUNCS } from '../constants/resize-handler';
+import { DrawingSettings } from '../models/drawing-settings';
 
 @Injectable()
 export class SelectService {
   private renderer: Renderer2;
   private selectorSettings: SelectorSettings = new SelectorSettings();
+  private drawingSettings: DrawingSettings;
   public selectionBoxGroup: SVGAElement;
 
   constructor(private rendererFactory2: RendererFactory2) {
@@ -27,11 +27,13 @@ export class SelectService {
     this.renderer.setAttribute(selectDottedBox, 'stroke', this.selectorSettings.stroke);
     this.renderer.setAttribute(selectDottedBox, 'stroke-dasharray', '5, 5');
     this.renderer.setAttribute(selectDottedBox, 'style', 'pointer-events:none');
-    // const sOffset: string = this.
-    const path: string = 'M' + (bBox.x - SELCTOR_OFFSET) + ',' + (bBox.y - SELCTOR_OFFSET)
-    + 'L' + (bBox.x + bBox.width + SELCTOR_OFFSET) + ',' + (bBox.y - SELCTOR_OFFSET)
-    + ',' + (bBox.x + bBox.width + SELCTOR_OFFSET) + ',' + (bBox.y + bBox.height + SELCTOR_OFFSET)
-    + ',' + (bBox.x - SELCTOR_OFFSET) + ',' + (bBox.y + bBox.height + SELCTOR_OFFSET) + 'Z';
+
+    this.drawingSettings = DrawingSettings.getInstance();
+    const sOffset: number = +this.drawingSettings.strokeWidth / 2;
+    const path: string = 'M' + (bBox.x - sOffset) + ',' + (bBox.y - sOffset)
+    + 'L' + (bBox.x + bBox.width + sOffset) + ',' + (bBox.y - sOffset)
+    + ',' + (bBox.x + bBox.width + sOffset) + ',' + (bBox.y + bBox.height + sOffset)
+    + ',' + (bBox.x - sOffset) + ',' + (bBox.y + bBox.height + sOffset) + 'Z';
     this.renderer.setAttribute(selectDottedBox, 'd', path);
     this.renderer.appendChild(selectorGroup, selectDottedBox);
 
@@ -84,10 +86,12 @@ export class SelectService {
 
     Object.keys(RESIZE_HANDLERS).forEach((dir: string) => {
       dataMap = new Map();
-      RESIZE_HANDLERS_FUNCTIONS[dir](dataMap, bBox);
+      RESIZE_HANDLERS_POS_FUNCS[dir](dataMap, bBox);
 
       Object.keys(RESIZE_HANDLER_ATTRS).forEach((attr: string) => {
-        RESIZE_HANDLERS_FUNCTIONS[dir](dataMap, bBox);
+        if (RESIZE_HANDLERS_ATTR_FUNC[attr]) {
+          RESIZE_HANDLERS_ATTR_FUNC[attr](dataMap, attr, this.selectorSettings, dir);
+        }
       });
       dataArr.push(dataMap);
     });

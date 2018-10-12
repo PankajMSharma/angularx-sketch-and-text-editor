@@ -9,6 +9,8 @@ export class SelectService {
   private renderer: Renderer2;
   private selectorSettings: SelectorSettings = new SelectorSettings();
   private drawingSettings: DrawingSettings;
+  private selectorGrpId: number = 0;
+  private parentSelectorGrpId: number = 0;
   public selectionBoxGroup: SVGAElement;
 
   constructor(private rendererFactory2: RendererFactory2) {
@@ -20,7 +22,7 @@ export class SelectService {
 
     const selectorGroup: Element = document.createElementNS(NAMESPACE.SVG, 'g');
     this.renderer.setAttribute(selectorGroup, 'display', 'inline');
-    this.renderer.setAttribute(selectorGroup, 'id', 'selectorGroup_0');
+    this.renderer.setAttribute(selectorGroup, 'id', this.generateSelectorGroupId());
 
     const selectDottedBox: Element = document.createElementNS(NAMESPACE.SVG, 'path');
     this.renderer.setAttribute(selectDottedBox, 'fill', this.selectorSettings.selectorBoxFill);
@@ -59,7 +61,7 @@ export class SelectService {
 
   private getParentSelectorGroup(): SVGAElement {
     const parentSelectorGroup: Element = document.createElementNS(NAMESPACE.SVG, 'g');
-    this.renderer.setAttribute(parentSelectorGroup, 'id', 'parentSelectorGroup_0');
+    this.renderer.setAttribute(parentSelectorGroup, 'id', this.generateParentSelectorGrpId());
     this.renderer.setAttribute(parentSelectorGroup, 'position', 'absolute');
     this.renderer.setAttribute(parentSelectorGroup, 'xmlns', NAMESPACE.XMLNS);
     this.renderer.setAttribute(parentSelectorGroup, 'xmlns:xlink', NAMESPACE.XLINK);
@@ -104,5 +106,15 @@ export class SelectService {
       this.renderer.setAttribute(shape, key, value);
     });
     return shape;
+  }
+
+  private generateParentSelectorGrpId(): string {
+    this.parentSelectorGrpId += 1;
+    return 'parentSelectorGroup_' + this.parentSelectorGrpId.toString();
+  }
+
+  private generateSelectorGroupId(): string {
+    this.selectorGrpId += 1;
+    return 'selectorGroup_' + this.selectorGrpId.toString();
   }
 }

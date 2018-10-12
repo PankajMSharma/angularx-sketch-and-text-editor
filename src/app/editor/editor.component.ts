@@ -104,7 +104,7 @@ export class EditorComponent implements OnInit, OnDestroy {
     if (group.getElementsByTagName('path')) {
       const path: SVGPathElement = group.getElementsByTagName('path')[0];
       const d: String = path.getAttribute('d');
-      const dValues: number[] = d.match(/\d+/g).map(Number);
+      const dValues: number[] = d.match(/\d+(\.?\d+)/g).map(Number);
       const pathArr: number[] = [];
 
       for (let i = 0; i < dValues.length; i++) {
@@ -121,7 +121,7 @@ export class EditorComponent implements OnInit, OnDestroy {
       const rh: NodeListOf<Element> = group.getElementsByTagName('g').item(0).getElementsByTagName('circle');
 
       for (let i = 0; i < rh.length; i++) {
-        const elmnt = rh[i]as Element;
+        const elmnt = rh[i] as Element;
         this.renderer.setAttribute(elmnt, 'cx', (+elmnt.getAttribute('cx') - pos3).toString());
         this.renderer.setAttribute(elmnt, 'cy', (+elmnt.getAttribute('cy') - pos4).toString());
       }
@@ -309,7 +309,7 @@ export class EditorComponent implements OnInit, OnDestroy {
   }
 
   private generateElementId(): string {
-    this.drawSettings.elemId = this.drawSettings.elemId + 1;
+    this.drawSettings.elemId += 1;
     return 'svg_elem_' + this.drawSettings.elemId.toString();
   }
 

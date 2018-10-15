@@ -25,3 +25,15 @@ export const RESIZE_HANDLER_ATTRS = {
   CY: 'cy',
   R: 'r'
 };
+
+export const ELLIPSE_ATTRS = {
+  ID: 'id',
+  CX: 'cx',
+  CY: 'cy',
+  RX: 'rx',
+  RY: 'ry',
+  FILL: 'fill',
+  STROKE: 'stroke',
+  STROKEWIDTH: 'stroke-width',
+  POSITION: 'position'
+};

@@ -100,14 +100,6 @@ export class SelectService {
     return dataArr;
   }
 
-  private createSVGElement(tagName: string, data: Map<string, string>): Element {
-    const shape: Element = document.createElementNS(NAMESPACE.SVG, tagName);
-    data.forEach((value: string, key: string) => {
-      this.renderer.setAttribute(shape, key, value);
-    });
-    return shape;
-  }
-
   private generateParentSelectorGrpId(): string {
     this.parentSelectorGrpId += 1;
     return 'parentSelectorGroup_' + this.parentSelectorGrpId.toString();

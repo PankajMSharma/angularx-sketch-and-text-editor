@@ -5,6 +5,7 @@ import { SelectService } from '../services/select.service';
 import { NAMESPACE } from '../constants/namespace';
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { gobbleEvent } from '../utils/event.utils';
+import { DomRendererService } from '../services/dom-renderer/domrenderer.service';
 
 @Component({
   selector: 'ng-editor',
@@ -22,7 +23,7 @@ export class EditorComponent implements OnInit, OnDestroy {
   private mouseUpSubscription: Subscription;
   public selectedElements: Array<SVGElement> = [];
 
-  constructor(private rendererFactory: RendererFactory2, private selectService: SelectService) {
+  constructor(private rendererFactory: RendererFactory2, private selectService: SelectService, private domRenderer: DomRendererService) {
     this.renderer = this.rendererFactory.createRenderer(null, null);
     this.drawSettings = DrawingSettings.getInstance(0, 'rgb(0, 0, 0)', 'white', '4');
    }
@@ -270,7 +271,9 @@ export class EditorComponent implements OnInit, OnDestroy {
     let cx: number, cy: number;
 
     if (!this.elemInConstruction) {
-      const elem: Element = document.createElementNS(NAMESPACE.SVG, 'ellipse');
+      const attrData: Map<string, string> = new Map();
+      const elem = this.domRenderer.createSVGElement('ellipse', attrData);
+      // const elem: Element = document.createElementNS(NAMESPACE.SVG, 'ellipse');
       this.renderer.setAttribute(elem, 'cx', event.clientX.toString());
       this.renderer.setAttribute(elem, 'cy', event.clientY.toString());
       this.renderer.setAttribute(elem, 'stroke', this.drawSettings.stroke);

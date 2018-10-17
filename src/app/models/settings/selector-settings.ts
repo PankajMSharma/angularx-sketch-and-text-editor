@@ -1,6 +1,4 @@
-import { ElementSettings } from './element-settings';
-
-export class SelectorSettings extends ElementSettings {
+export class SelectorSettings {
     private _stroke: string;
     private _selectorBoxFill: string;
     private _circleFill: string;
@@ -9,7 +7,6 @@ export class SelectorSettings extends ElementSettings {
     private _circleRadius: string;
 
     constructor() {
-        super();
         this.stroke = '#22C';
         this.selectorBoxFill = 'none';
         this.circleFill = '#22C';

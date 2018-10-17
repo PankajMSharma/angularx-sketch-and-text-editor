@@ -7,6 +7,7 @@ import { EditorHeaderComponent } from './editor-header/editor-header.component';
 import { EditorFooterComponent } from './editor-footer/editor-footer.component';
 import { SelectService } from './services/select.service';
 import { DomRendererService } from './services/dom-renderer/domrenderer.service';
+import { ShapeFactory } from './models/shape-factory';
 
 
 @NgModule({
@@ -21,7 +22,8 @@ import { DomRendererService } from './services/dom-renderer/domrenderer.service'
   ],
   providers: [
     SelectService,
-    DomRendererService
+    DomRendererService,
+    ShapeFactory
   ],
   bootstrap: [AppComponent]
 })

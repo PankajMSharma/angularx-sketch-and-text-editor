@@ -1,11 +1,14 @@
 import { Component, OnInit, HostListener, Input, Renderer2, ViewChild, ElementRef, OnDestroy, RendererFactory2 } from '@angular/core';
 import { Subscription, Observable, ReplaySubject } from 'rxjs';
-import { DrawingSettings } from '../models/drawing-settings';
+import { DrawingSettings } from '../models/settings/drawing-settings';
 import { SelectService } from '../services/select.service';
-import { NAMESPACE } from '../constants/namespace';
+import { TOOL_TAGNAMES, UNI_DRAW_SETTINGS } from '../constants/namespace';
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { gobbleEvent } from '../utils/event.utils';
 import { DomRendererService } from '../services/dom-renderer/domrenderer.service';
+import { ShapeFactory } from '../models/shape-factory';
+import { Ellipse } from '../models/ellipse';
+import { Rectangle } from '../models/rectangle';
 
 @Component({
   selector: 'ng-editor',
@@ -23,9 +26,11 @@ export class EditorComponent implements OnInit, OnDestroy {
   private mouseUpSubscription: Subscription;
   public selectedElements: Array<SVGElement> = [];
 
-  constructor(private rendererFactory: RendererFactory2, private selectService: SelectService, private domRenderer: DomRendererService) {
+  constructor(private rendererFactory: RendererFactory2, private selectService: SelectService, private domRenderer: DomRendererService,
+    private shapeFactory: ShapeFactory) {
     this.renderer = this.rendererFactory.createRenderer(null, null);
-    this.drawSettings = DrawingSettings.getInstance(0, 'rgb(0, 0, 0)', 'white', '4');
+    this.drawSettings = DrawingSettings.getInstance(UNI_DRAW_SETTINGS.ID, UNI_DRAW_SETTINGS.STROKE,
+                                                    UNI_DRAW_SETTINGS.FILL, UNI_DRAW_SETTINGS.STROKEWIDTH);
    }
 
   ngOnInit() {
@@ -37,6 +42,10 @@ export class EditorComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Delegates job as per the current tool like.. creating rectangle, ellipse, etc.
+   * @param event
+   */
   @HostListener('mousedown', ['$event'])
   public onMouseDown(event: MouseEvent) {
     gobbleEvent(event);
@@ -51,6 +60,10 @@ export class EditorComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Drags selected elements
+   * @param event
+   */
   private dragElements(event: MouseEvent): void {
     // check if element is selected
     if (this.isSelectedElement(event.target as Element)) {
@@ -101,11 +114,17 @@ export class EditorComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Sets new properties for dragged selector box
+   * @param group
+   * @param pos3
+   * @param pos4
+   */
   private dragSelectorBox(group: Element, pos3: number, pos4: number): void {
     if (group.getElementsByTagName('path')) {
       const path: SVGPathElement = group.getElementsByTagName('path')[0];
       const d: String = path.getAttribute('d');
-      const dValues: number[] = d.match(/\d+(\.?\d+)/g).map(Number);
+      const dValues: number[] = d.match(/-*\d*(\.?\d+)/g).map(Number);
       const pathArr: number[] = [];
 
       for (let i = 0; i < dValues.length; i++) {
@@ -119,22 +138,34 @@ export class EditorComponent implements OnInit, OnDestroy {
     }
 
     if (group.getElementsByTagName('g').length > 0) {
-      const rh: NodeListOf<Element> = group.getElementsByTagName('g').item(0).getElementsByTagName('circle');
+      const rh: NodeListOf<SVGCircleElement> = group.getElementsByTagName('g').item(0).getElementsByTagName('circle');
 
       for (let i = 0; i < rh.length; i++) {
-        const elmnt = rh[i] as Element;
+        const elmnt = rh.item(i);
         this.renderer.setAttribute(elmnt, 'cx', (+elmnt.getAttribute('cx') - pos3).toString());
         this.renderer.setAttribute(elmnt, 'cy', (+elmnt.getAttribute('cy') - pos4).toString());
       }
     }
   }
 
+  /**
+   * Sets new properties from dragged ellipse
+   * @param elem
+   * @param pos3
+   * @param pos4
+   */
   private dragEllipse (elem: SVGEllipseElement, pos3: number, pos4: number): void {
     // set the element's new position
     this.renderer.setAttribute(elem, 'cx', (+elem.getAttribute('cx') - pos3).toString());
     this.renderer.setAttribute(elem, 'cy', (+elem.getAttribute('cy') - pos4).toString());
   }
 
+  /**
+   * Sets new properties from dragged rectangle
+   * @param elem
+   * @param pos3
+   * @param pos4
+   */
   private dragRectangle (elem: SVGRectElement, pos3: number, pos4: number): void {
     // set the element's new position
     this.renderer.setAttribute(elem, 'x', (+elem.getAttribute('x') - pos3).toString());
@@ -143,7 +174,6 @@ export class EditorComponent implements OnInit, OnDestroy {
 
   /**
   * Checks if the given element is selected
-  *
   * @param elem
   */
   private isSelectedElement(elem: Element): boolean {
@@ -210,6 +240,10 @@ export class EditorComponent implements OnInit, OnDestroy {
     return targetElem as SVGElement;
   }
 
+  /**
+   * Listens to MouseUp event on this component.
+   * @param event
+   */
   @HostListener('mouseup', ['$event'])
   public onMouseUp(event: MouseEvent) {
     event.preventDefault();
@@ -227,21 +261,19 @@ export class EditorComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Creates rectangle
+   * @param event
+   */
   private drawRectangle(event: MouseEvent): void {
     let x: number, y: number;
 
     if (!this.elemInConstruction) {
-      const elem: Element = document.createElementNS(NAMESPACE.SVG, 'rect');
-      this.renderer.setAttribute(elem, 'x', event.clientX.toString());
-      this.renderer.setAttribute(elem, 'y', event.clientY.toString());
-      this.renderer.setAttribute(elem, 'stroke', this.drawSettings.stroke);
-      this.renderer.setAttribute(elem, 'fill', this.drawSettings.fill);
-      this.renderer.setAttribute(elem, 'stroke-width', this.drawSettings.strokeWidth);
-      this.renderer.setAttribute(elem, 'id', this.generateElementId());
-      this.renderer.setAttribute(elem, 'position', 'absolute');
-      this.renderer.setAttribute(elem, 'width', '0');
-      this.renderer.setAttribute(elem, 'height', '0');
+      const shape: Rectangle = this.shapeFactory.getShape(TOOL_TAGNAMES.RECTANGLE) as Rectangle;
+      const attrData: Map<string, string> = shape.getRectangleConfig(event, this.generateElementId());
+      const elem: Element = shape.createElement(attrData);
       this.elemInConstruction = elem;
+
       this.svg.nativeElement.append(this.elemInConstruction);
       x = +this.elemInConstruction.getAttribute('x');
       y = +this.elemInConstruction.getAttribute('y');
@@ -267,24 +299,22 @@ export class EditorComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Creates Ellipse
+   * @param event
+   */
   public drawEllipse(event: MouseEvent): void {
     let cx: number, cy: number;
 
     if (!this.elemInConstruction) {
-      const attrData: Map<string, string> = new Map();
-      const elem = this.domRenderer.createSVGElement('ellipse', attrData);
-      // const elem: Element = document.createElementNS(NAMESPACE.SVG, 'ellipse');
-      this.renderer.setAttribute(elem, 'cx', event.clientX.toString());
-      this.renderer.setAttribute(elem, 'cy', event.clientY.toString());
-      this.renderer.setAttribute(elem, 'stroke', this.drawSettings.stroke);
-      this.renderer.setAttribute(elem, 'fill', this.drawSettings.fill);
-      this.renderer.setAttribute(elem, 'stroke-width', this.drawSettings.strokeWidth);
-      this.renderer.setAttribute(elem, 'id', this.generateElementId());
-      this.renderer.setAttribute(elem, 'position', 'absolute');
-      this.renderer.setAttribute(elem, 'rx', '0');
-      this.renderer.setAttribute(elem, 'ry', '0');
+      const shape: Ellipse = this.shapeFactory.getShape(TOOL_TAGNAMES.ELLIPSE) as Ellipse;
+      const attrData: Map<string, string> = shape.getEllipseConfig(event, this.generateElementId());
+      const elem: Element = shape.createElement(attrData);
+
       this.elemInConstruction = elem;
+
       this.svg.nativeElement.append(this.elemInConstruction);
+
       cx = +this.elemInConstruction.getAttribute('cx');
       cy = +this.elemInConstruction.getAttribute('cy');
     }
@@ -311,6 +341,9 @@ export class EditorComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Generates id for SVG elements
+   */
   private generateElementId(): string {
     this.drawSettings.elemId += 1;
     return 'svg_elem_' + this.drawSettings.elemId.toString();

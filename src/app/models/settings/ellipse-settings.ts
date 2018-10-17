@@ -1,7 +1,7 @@
-import { ElementSettings } from './element-settings';
 import { DrawingSettings } from './drawing-settings';
 
-export class SVGElementsSettings extends ElementSettings {
+export class EllipseSettings {
+    private _id: string;
     private _cx: string;
     private _cy: string;
     private _rx: string;
@@ -10,17 +10,27 @@ export class SVGElementsSettings extends ElementSettings {
     private _stroke: string;
     private _strokeWidth: string;
     private _position: string;
+    private drawingSettings: DrawingSettings;
 
-    constructor() {
-        super();
-        this.cx = '0';
-        this.cy = '0';
+    constructor(event: MouseEvent, id: string) {
+        this.drawingSettings = DrawingSettings.getInstance();
+        this.id = id;
+        this.cx = event.clientX.toString();
+        this.cy = event.clientY.toString();
         this.rx = '0';
         this.ry = '0';
-        this.fill = 'white';
-        this.stroke = 'rgb(0, 0, 0)';
-        this.strokeWidth = '4';
+        this.fill = this.drawingSettings.fill;
+        this.stroke = this.drawingSettings.stroke;
+        this.strokeWidth = this.drawingSettings.strokeWidth;
         this.position = 'absolute';
+    }
+
+    get id(): string {
+        return this._id;
+    }
+
+    set id(id: string) {
+        this._id = id;
     }
 
     get cx(): string {

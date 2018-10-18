@@ -4,6 +4,11 @@ export const NAMESPACE = {
     XLINK: 'http://www.w3.org/1999/xlink'
   };
 
+export const TOOL_TAGNAMES = {
+  RECTANGLE: 'rect',
+  ELLIPSE: 'ellipse'
+};
+
 export const RESIZE_HANDLERS = {
   NW: 'nw',
   N: 'n',
@@ -13,6 +18,13 @@ export const RESIZE_HANDLERS = {
   S: 's',
   SW: 'sw',
   W: 'w'
+};
+
+export const UNI_DRAW_SETTINGS = {
+  ID: 0,
+  STROKE: 'rgb(0, 0, 0)',
+  STROKEWIDTH: '4',
+  FILL: 'rgb(255, 255, 255)'
 };
 
 export const RESIZE_HANDLER_ATTRS = {
@@ -25,3 +37,32 @@ export const RESIZE_HANDLER_ATTRS = {
   CY: 'cy',
   R: 'r'
 };
+
+export const ELLIPSE_ATTRS = {
+  ID: 'id',
+  CX: 'cx',
+  CY: 'cy',
+  RX: 'rx',
+  RY: 'ry',
+  FILL: 'fill',
+  STROKE: 'stroke',
+  STROKEWIDTH: 'stroke-width',
+  POSITION: 'position'
+};
+
+export const RECTANGLE_ATTRS = {
+  ID: 'id',
+  X: 'x',
+  Y: 'y',
+  WIDTH: 'width',
+  HEIGHT: 'height',
+  FILL: 'fill',
+  STROKE: 'stroke',
+  STROKEWIDTH: 'stroke-width',
+  POSITION: 'position'
+};
+
+export enum TOOLNAMES {
+  ELLIPSE,
+  RECTANGLE
+}

@@ -1,5 +1,5 @@
 import { RESIZE_HANDLER_ATTRS, RESIZE_HANDLERS } from '../constants/namespace';
-import { SelectorSettings } from '../models/selector-settings';
+import { SelectorSettings } from '../models/settings/selector-settings';
 
 const CX = 'cx';
 const CY = 'cy';
@@ -57,5 +57,56 @@ export const RESIZE_HANDLERS_ATTR_FUNC = {
     },
     STYLE: (dataMap: Map<string, string>, attr: string, setting?: SelectorSettings, dir?: string) => {
         dataMap.set(RESIZE_HANDLER_ATTRS[attr], 'cursor:' + RESIZE_HANDLERS[dir] + '-resize');
+    }
+};
+
+export const ATTR_FUNC = {
+    ID: (dataMap: Map<string, string>, attr: string, setting?: any, dir?: string) => {
+        dataMap.set(attr, setting.id);
+    },
+    X: (dataMap: Map<string, string>, attr: string, setting: any, dir?: string) => {
+        dataMap.set(attr, setting.x);
+    },
+    Y: (dataMap: Map<string, string>, attr: string, setting: any, dir?: string) => {
+        dataMap.set(attr, setting.y);
+    },
+    CX: (dataMap: Map<string, string>, attr: string, setting: any, dir?: string) => {
+        dataMap.set(attr, setting.cx);
+    },
+    CY: (dataMap: Map<string, string>, attr: string, setting: any, dir?: string) => {
+        dataMap.set(attr, setting.cy);
+    },
+    RX: (dataMap: Map<string, string>, attr: string, setting: any, dir?: string) => {
+        dataMap.set(attr, setting.rx);
+    },
+    RY: (dataMap: Map<string, string>, attr: string, setting: any, dir?: string) => {
+        dataMap.set(attr, setting.rx);
+    },
+    WIDTH: (dataMap: Map<string, string>, attr: string, setting: any, dir?: string) => {
+        dataMap.set(attr, setting.width);
+    },
+    HEIGHT: (dataMap: Map<string, string>, attr: string, setting: any, dir?: string) => {
+        dataMap.set(attr, setting.height);
+    },
+    POSITION: (dataMap: Map<string, string>, attr: string, setting: any, dir?: string) => {
+        dataMap.set(attr, setting.position);
+    },
+    FILL: (dataMap: Map<string, string>, attr: string, setting: any, dir?: string) => {
+        dataMap.set(attr, setting.fill);
+    },
+    STROKE: (dataMap: Map<string, string>, attr: string, setting: any, dir?: string) => {
+        dataMap.set(attr, setting.stroke);
+    },
+    STROKEWIDTH: (dataMap: Map<string, string>, attr: string, setting: any, dir?: string) => {
+        dataMap.set(attr, setting.strokeWidth);
+    },
+    POINTEREVENTS: (dataMap: Map<string, string>, attr: string, setting: any, dir?: string) => {
+        dataMap.set(attr, setting.pointerEvents);
+    },
+    R: (dataMap: Map<string, string>, attr: string, setting: any, dir?: string) => {
+        dataMap.set(attr, setting.circleRadius);
+    },
+    STYLE: (dataMap: Map<string, string>, attr: string, setting?: any, dir?: string) => {
+        dataMap.set(attr, 'cursor:' + dir + '-resize');
     }
 };

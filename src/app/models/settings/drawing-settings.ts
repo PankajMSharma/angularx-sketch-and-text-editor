@@ -16,6 +16,7 @@ export class DrawingSettings {
     if (!this.instance) {
       this.instance = new DrawingSettings(id, stroke, fill, strokeWidth);
     }
+
     return this.instance;
   }
 }

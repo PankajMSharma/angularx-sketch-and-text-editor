@@ -1,8 +1,9 @@
 import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 import { NAMESPACE, RESIZE_HANDLERS, RESIZE_HANDLER_ATTRS } from '../constants/namespace';
-import { SelectorSettings } from '../models/selector-settings';
+import { SelectorSettings } from '../models/settings/selector-settings';
 import { RESIZE_HANDLERS_ATTR_FUNC, RESIZE_HANDLERS_POS_FUNCS } from '../constants/resize-handler';
-import { DrawingSettings } from '../models/drawing-settings';
+import { DrawingSettings } from '../models/settings/drawing-settings';
+import { DomRendererService } from './dom-renderer/domrenderer.service';
 
 @Injectable()
 export class SelectService {
@@ -13,7 +14,7 @@ export class SelectService {
   private parentSelectorGrpId: number = 0;
   public selectionBoxGroup: SVGAElement;
 
-  constructor(private rendererFactory2: RendererFactory2) {
+  constructor(private rendererFactory2: RendererFactory2, private domRenderer: DomRendererService) {
     this.renderer = this.rendererFactory2.createRenderer(null, null);
   }
 
@@ -76,7 +77,7 @@ export class SelectService {
 
     const handlerAttr: Array<Map<string, string>> = this.getResizeHandlerConfig(bBox);
     handlerAttr.forEach((shapeAttrs: Map<string, string>) => {
-      this.renderer.appendChild(handlerGroup, this.createSVGElement('circle', shapeAttrs));
+      this.renderer.appendChild(handlerGroup, this.domRenderer.createSVGElement('circle', shapeAttrs));
     });
 
     return handlerGroup;
@@ -98,14 +99,6 @@ export class SelectService {
       dataArr.push(dataMap);
     });
     return dataArr;
-  }
-
-  private createSVGElement(tagName: string, data: Map<string, string>): Element {
-    const shape: Element = document.createElementNS(NAMESPACE.SVG, tagName);
-    data.forEach((value: string, key: string) => {
-      this.renderer.setAttribute(shape, key, value);
-    });
-    return shape;
   }
 
   private generateParentSelectorGrpId(): string {

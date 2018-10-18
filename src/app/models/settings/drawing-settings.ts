@@ -1,3 +1,5 @@
+import { UNI_DRAW_SETTINGS } from '../../constants/namespace';
+
 export class DrawingSettings {
   private static instance: DrawingSettings;
   public elemId: number;
@@ -13,9 +15,12 @@ export class DrawingSettings {
   }
 
   public static getInstance(id?: number, stroke?: string, fill?: string, strokeWidth?: string): DrawingSettings {
-    if (!this.instance) {
-      this.instance = new DrawingSettings(id, stroke, fill, strokeWidth);
+    if (!!this.instance) {
+      return this.instance;
     }
+
+    this.instance = (!id) ? new DrawingSettings(UNI_DRAW_SETTINGS.ID, UNI_DRAW_SETTINGS.STROKE,
+           UNI_DRAW_SETTINGS.FILL, UNI_DRAW_SETTINGS.STROKEWIDTH) : new DrawingSettings(id, stroke, fill, strokeWidth);
 
     return this.instance;
   }

@@ -8,6 +8,7 @@ import { EditorFooterComponent } from './editor-footer/editor-footer.component';
 import { SelectService } from './services/select.service';
 import { DomRendererService } from './services/dom-renderer/domrenderer.service';
 import { ShapeFactory } from './models/shape-factory';
+import { ShapeConfigGenerator } from './services/shape-config-generator/shape-config-generator';
 
 
 @NgModule({

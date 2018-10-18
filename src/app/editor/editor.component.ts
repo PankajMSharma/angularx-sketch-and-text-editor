@@ -2,13 +2,13 @@ import { Component, OnInit, HostListener, Input, Renderer2, ViewChild, ElementRe
 import { Subscription, Observable, ReplaySubject } from 'rxjs';
 import { DrawingSettings } from '../models/settings/drawing-settings';
 import { SelectService } from '../services/select.service';
-import { TOOL_TAGNAMES, UNI_DRAW_SETTINGS } from '../constants/namespace';
+import { TOOL_TAGNAMES } from '../constants/namespace';
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { gobbleEvent } from '../utils/event.utils';
 import { DomRendererService } from '../services/dom-renderer/domrenderer.service';
 import { ShapeFactory } from '../models/shape-factory';
-import { Ellipse } from '../models/ellipse';
 import { Rectangle } from '../models/rectangle';
+import { Shape } from '../models/shape';
 
 @Component({
   selector: 'ng-editor',
@@ -29,8 +29,7 @@ export class EditorComponent implements OnInit, OnDestroy {
   constructor(private rendererFactory: RendererFactory2, private selectService: SelectService, private domRenderer: DomRendererService,
     private shapeFactory: ShapeFactory) {
     this.renderer = this.rendererFactory.createRenderer(null, null);
-    this.drawSettings = DrawingSettings.getInstance(UNI_DRAW_SETTINGS.ID, UNI_DRAW_SETTINGS.STROKE,
-                                                    UNI_DRAW_SETTINGS.FILL, UNI_DRAW_SETTINGS.STROKEWIDTH);
+    this.drawSettings = DrawingSettings.getInstance();
    }
 
   ngOnInit() {
@@ -270,8 +269,8 @@ export class EditorComponent implements OnInit, OnDestroy {
 
     if (!this.elemInConstruction) {
       const shape: Rectangle = this.shapeFactory.getShape(TOOL_TAGNAMES.RECTANGLE) as Rectangle;
-      const attrData: Map<string, string> = shape.getRectangleConfig(event, this.generateElementId());
-      const elem: Element = shape.createElement(attrData);
+      // const attrData: Map<string, string> = shape.getRectangleConfig(event, this.generateElementId());
+      const elem: Element = shape.createElement(shape, event, this.generateElementId());
       this.elemInConstruction = elem;
 
       this.svg.nativeElement.append(this.elemInConstruction);
@@ -307,9 +306,9 @@ export class EditorComponent implements OnInit, OnDestroy {
     let cx: number, cy: number;
 
     if (!this.elemInConstruction) {
-      const shape: Ellipse = this.shapeFactory.getShape(TOOL_TAGNAMES.ELLIPSE) as Ellipse;
-      const attrData: Map<string, string> = shape.getEllipseConfig(event, this.generateElementId());
-      const elem: Element = shape.createElement(attrData);
+      const shape: Shape = this.shapeFactory.getShape(TOOL_TAGNAMES.ELLIPSE);
+      // const attrData: Map<string, string> = (shape as Ellipse).getEllipseConfig(event, this.generateElementId());
+      const elem: Element = shape.createElement(shape, event, this.generateElementId());
 
       this.elemInConstruction = elem;
 

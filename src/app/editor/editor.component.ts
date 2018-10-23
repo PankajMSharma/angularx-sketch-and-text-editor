@@ -269,7 +269,6 @@ export class EditorComponent implements OnInit, OnDestroy {
 
     if (!this.elemInConstruction) {
       const shape: Rectangle = this.shapeFactory.getShape(TOOL_TAGNAMES.RECTANGLE) as Rectangle;
-      // const attrData: Map<string, string> = shape.getRectangleConfig(event, this.generateElementId());
       const elem: Element = shape.createElement(shape, event, this.generateElementId());
       this.elemInConstruction = elem;
 
@@ -307,7 +306,7 @@ export class EditorComponent implements OnInit, OnDestroy {
 
     if (!this.elemInConstruction) {
       const shape: Shape = this.shapeFactory.getShape(TOOL_TAGNAMES.ELLIPSE);
-      // const attrData: Map<string, string> = (shape as Ellipse).getEllipseConfig(event, this.generateElementId());
+
       const elem: Element = shape.createElement(shape, event, this.generateElementId());
 
       this.elemInConstruction = elem;

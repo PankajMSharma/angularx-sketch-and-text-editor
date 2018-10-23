@@ -1,5 +1,6 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { ToolState } from '../models/tool-state';
+import { TOOLNAMES } from '../constants/namespace';
 
 const DEFAULT_TOOL: string = 'select';
 
@@ -12,7 +13,7 @@ export class EditorHeaderComponent implements OnInit {
   @Input() editorTitle: string;
   @Output() selectedTool: EventEmitter<string> = new EventEmitter<string>();
   public toolsState: Array<ToolState> = new Array<ToolState>();
-  public toolsNames: Array<string> = new Array<string>('rectangle', 'ellipse', 'select', 'textEdit', 'fileUpload');
+  public toolsNames: Array<string> = new Array<string>(TOOLNAMES.ELLIPSE, TOOLNAMES.RECTANGLE, TOOLNAMES.SELECT);
 
   constructor() { }
 
@@ -22,8 +23,8 @@ export class EditorHeaderComponent implements OnInit {
   }
 
   public initializeTools(): void {
-    this.toolsNames.forEach(name => this.toolsState.push(new ToolState(name, 'enabled')));
-    this.toolsState[2].state = 'selected';
+    this.toolsNames.forEach((name: string) =>
+      this.toolsState.push(name === TOOLNAMES.SELECT ? new ToolState(name, 'selected') : new ToolState(name, 'enabled')));
   }
 
   public selectTool(toolName?: string): void {

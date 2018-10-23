@@ -1,37 +1,19 @@
 import { ATTR_FUNC } from '../../constants/resize-handler';
-import { Injectable } from '@angular/core';
-import { Shape } from '../../models/shape';
-import { EllipseSettings } from '../../models/settings/ellipse-settings';
-import { RectangleSettings } from '../../models/settings/rectangle-settings';
 
 /**
- * Generate SVG element attributes for EllipseSettings, RectangleSetings, etc.
+ * Generate SVG element attributes for Ellipse, Rectangle, etc.
  */
 export class ShapeConfigGenerator<T> {
-    private ATTRiBUTES = {};
-    private settings;
 
-    public getElementAttr(shape: Shape, event: MouseEvent, id: string): Map<string, string> {
+    public getElementAttr(shape: T, attrs: any, event: MouseEvent, id: string): Map<string, string> {
       const dataMap: Map<string, string> = new Map();
-      this.manageConfig(shape, event, id);
 
-      Object.keys(this.ATTRiBUTES).forEach((attr: string) => {
+      Object.keys(attrs).forEach((attr: string) => {
         if (ATTR_FUNC[attr]) {
-          ATTR_FUNC[attr](dataMap, this.ATTRiBUTES[attr], this.settings);
+          ATTR_FUNC[attr](dataMap, attrs[attr], shape.settings);
         }
       });
 
       return dataMap;
     }
-
-    private manageConfig(shape: Shape, event: MouseEvent, id: string) {
-      console.log('Shape is:-', shape.constructor.name);
-      const settings =  new EllipseSettings(event, id);
-      return settings;
-    }
-}
-
-interface ShapeMap {
-  'Ellipse': EllipseSettings;
-  'Rectangle': RectangleSettings;
 }

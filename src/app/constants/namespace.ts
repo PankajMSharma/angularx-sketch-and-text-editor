@@ -62,7 +62,18 @@ export const RECTANGLE_ATTRS = {
   POSITION: 'position'
 };
 
-export enum TOOLNAMES {
-  ELLIPSE,
-  RECTANGLE
-}
+export const TOOLNAMES = {
+  ELLIPSE: 'ELLIPSE',
+  RECTANGLE: 'RECTANGLE',
+  SELECT: 'SELECT'
+};
+
+/* export function constToArray(constant: Object) {
+  const arr: Array<string>;
+  for (key in constant) {
+    if (key !== undefined) {
+      arr.push(key);
+    }
+  }
+  return arr;
+} */

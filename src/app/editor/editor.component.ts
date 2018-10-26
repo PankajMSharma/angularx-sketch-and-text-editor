@@ -9,6 +9,7 @@ import { DomRendererService } from '../services/dom-renderer/domrenderer.service
 import { ShapeFactory } from '../models/shape-factory';
 import { Rectangle } from '../models/rectangle';
 import { Shape } from '../models/shape';
+import { Ellipse } from '../models/ellipse';
 
 @Component({
   selector: 'ng-editor',
@@ -35,7 +36,7 @@ export class EditorComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.selectedTool.subscribe(selectedTool => {
       if (selectedTool !== TOOLNAMES.SELECT) {
-        this.clearSelection();
+        this.selectedElements = this.selectService.clearSelection(this.svg, this.selectedElements);
       }
       this.currentTool = selectedTool;
     });
@@ -60,118 +61,6 @@ export class EditorComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Drags selected elements
-   * @param event
-   */
-  private dragElements(event: MouseEvent): void {
-    // check if element is selected
-    if (this.isSelectedElement(event.target as Element)) {
-      let pos1: number = 0;
-      let pos2: number = 0;
-      let pos3: number = 0;
-      let pos4: number = 0;
-
-      // get the mouse cursor position at start
-      pos1 = event.clientX;
-      pos2 = event.clientY;
-
-      if (this.mouseMoveSubscription && !this.mouseMoveSubscription.closed) {
-        this.mouseMoveSubscription.unsubscribe();
-      }
-
-      this.mouseMoveSubscription = Observable.fromEvent(this.svg.nativeElement, 'mousemove').subscribe((moveEvent: MouseEvent) => {
-        gobbleEvent(event);
-
-        pos3 = pos1 - moveEvent.clientX;
-        pos4 = pos2 - moveEvent.clientY;
-        pos1 = moveEvent.clientX;
-        pos2 = moveEvent.clientY;
-
-        // drag for each selected element
-        this.selectedElements.forEach((elem: SVGElement) => {
-          switch (elem.tagName) {
-            case 'ellipse': this.dragEllipse(elem as SVGEllipseElement, pos3, pos4);
-            break;
-            case 'rect': this.dragRectangle(elem as SVGRectElement, pos3, pos4);
-            break;
-          }
-        });
-
-        const selectorElems: HTMLCollection = this.selectService.selectionBoxGroup.children;
-
-        for (let i = 0; i < selectorElems.length; i++) {
-          this.dragSelectorBox(selectorElems[i], pos3, pos4);
-        }
-      });
-
-      this.mouseUpSubscription = fromEvent(document, 'mouseup').subscribe((moveUp: MouseEvent) => {
-        if (this.mouseMoveSubscription && !this.mouseMoveSubscription.closed) {
-          this.mouseMoveSubscription.unsubscribe();
-        }
-
-      });
-    }
-  }
-
-  /**
-   * Sets new properties for dragged selector box
-   * @param group
-   * @param pos3
-   * @param pos4
-   */
-  private dragSelectorBox(group: Element, pos3: number, pos4: number): void {
-    if (group.getElementsByTagName('path')) {
-      const path: SVGPathElement = group.getElementsByTagName('path')[0];
-      const d: String = path.getAttribute('d');
-      const dValues: number[] = d.match(/-*\d*(\.?\d+)/g).map(Number);
-      const pathArr: number[] = [];
-
-      for (let i = 0; i < dValues.length; i++) {
-        pathArr.push((i % 2 === 0) ? (dValues[i] - pos3) : (dValues[i] - pos4));
-      }
-
-      const pathD: string = 'M' + pathArr[0] + ',' + pathArr[1] + 'L' + pathArr[2] + ',' + pathArr[3] + ',' + pathArr[4] + ',' + pathArr[5]
-      + ',' + pathArr[6] + ',' + pathArr[7] + 'Z';
-
-      this.renderer.setAttribute(path, 'd', pathD);
-    }
-
-    if (group.getElementsByTagName('g').length > 0) {
-      const rh: NodeListOf<SVGCircleElement> = group.getElementsByTagName('g').item(0).getElementsByTagName('circle');
-
-      Array.from(rh).forEach((elmnt: SVGCircleElement) => {
-        this.renderer.setAttribute(elmnt, 'cx', (+elmnt.getAttribute('cx') - pos3).toString());
-        this.renderer.setAttribute(elmnt, 'cy', (+elmnt.getAttribute('cy') - pos4).toString());
-      });
-    }
-  }
-
-
-  /**
-   * Sets new properties from dragged ellipse
-   * @param elem
-   * @param pos3
-   * @param pos4
-   */
-  private dragEllipse (elem: SVGEllipseElement, pos3: number, pos4: number): void {
-    // set the element's new position
-    this.renderer.setAttribute(elem, 'cx', (+elem.getAttribute('cx') - pos3).toString());
-    this.renderer.setAttribute(elem, 'cy', (+elem.getAttribute('cy') - pos4).toString());
-  }
-
-  /**
-   * Sets new properties from dragged rectangle
-   * @param elem
-   * @param pos3
-   * @param pos4
-   */
-  private dragRectangle (elem: SVGRectElement, pos3: number, pos4: number): void {
-    // set the element's new position
-    this.renderer.setAttribute(elem, 'x', (+elem.getAttribute('x') - pos3).toString());
-    this.renderer.setAttribute(elem, 'y', (+elem.getAttribute('y') - pos4).toString());
-  }
-
-  /**
   * Checks if the given element is selected
   * @param elem
   */
@@ -187,7 +76,7 @@ export class EditorComponent implements OnInit, OnDestroy {
         if (target.tagName !== 'svg') {
           if (!event.ctrlKey) {
             // remove old selection box
-            this.clearSelection();
+            this.selectedElements = this.selectService.clearSelection(this.svg, this.selectedElements);
           }
 
           // get Parent group Element
@@ -202,23 +91,14 @@ export class EditorComponent implements OnInit, OnDestroy {
           }
         } else {
           // remove old selection box
-          this.clearSelection();
+          this.selectedElements = this.selectService.clearSelection(this.svg, this.selectedElements);
         }
       }
     });
-    this.dragElements(event);
-  }
-
-  /**
-  * Removes selection box
-  */
-  public clearSelection(): void {
-    if (this.selectService.selectionBoxGroup) {
-      this.renderer.removeChild(this.svg.nativeElement, this.selectService.selectionBoxGroup);
+    if (this.isSelectedElement(event.target as Element)) {
+      // check if element is selected
+      this.selectService.dragSelectedElements(event, this.mouseMoveSubscription, this.mouseUpSubscription, this.svg, this.selectedElements);
     }
-
-    this.selectService.selectionBoxGroup = null;
-    this.selectedElements = [];
   }
 
   /**
@@ -261,44 +141,18 @@ export class EditorComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Creates rectangle
+   *
    * @param event
    */
   private drawRectangle(event: MouseEvent): void {
-    let x: number, y: number;
+    const shape: Rectangle = this.shapeFactory.getShape(TOOL_TAGNAMES.RECTANGLE) as Rectangle;
 
-    if (!this.elemInConstruction) {
-      const shape: Rectangle = this.shapeFactory.getShape(TOOL_TAGNAMES.RECTANGLE) as Rectangle;
-      const elem: Element = shape.createElement(shape, event, this.generateElementId());
-      this.elemInConstruction = elem;
-
-      this.svg.nativeElement.append(this.elemInConstruction);
-      x = +this.elemInConstruction.getAttribute('x');
-      y = +this.elemInConstruction.getAttribute('y');
-    }
-
-    this.mouseMoveSubscription = Observable.fromEvent(this.svg.nativeElement, 'mousemove').subscribe((moveEvent: MouseEvent) => {
-      if (this.elemInConstruction) {
-        const width: number = moveEvent.clientX - x;
-        const height: number = moveEvent.clientY - y;
-        this.renderer.setAttribute(this.elemInConstruction, 'x', ((width > 0) ? x : moveEvent.clientX).toString());
-        this.renderer.setAttribute(this.elemInConstruction, 'y', ((height > 0) ? y : moveEvent.clientY).toString());
-        this.renderer.setAttribute(this.elemInConstruction, 'width', ((width > 0) ? width : (-1 * width)).toString());
-        this.renderer.setAttribute(this.elemInConstruction, 'height', ((height > 0) ? height : (-1 * height)).toString());
-      }
-    });
-
-    this.mouseUpSubscription = Observable.fromEvent(this.svg.nativeElement, 'mouseup').subscribe((UpEvent: MouseEvent) => {
-      const width: number = UpEvent.clientX - x;
-      const height: number = UpEvent.clientY - y;
-      if ((!width || !height) && this.elemInConstruction) {
-        this.renderer.removeChild(this.svg.nativeElement, this.elemInConstruction);
-      }
-    });
+    shape.drawRectangle(event, this.elemInConstruction, this.mouseMoveSubscription, this.mouseUpSubscription,
+                        this.generateElementId(), this.svg);
   }
 
   /**
-   * Creates Ellipse
+   *
    * @param event
    */
   public drawEllipse(event: MouseEvent): void {
@@ -321,8 +175,8 @@ export class EditorComponent implements OnInit, OnDestroy {
       if (this.elemInConstruction) {
       const rx: number = moveEvent.clientX - cx;
       const ry: number = moveEvent.clientY - cy;
-      this.renderer.setAttribute(this.elemInConstruction, 'rx', ((rx > 0) ? rx : (-1 * rx)).toString());
-      this.renderer.setAttribute(this.elemInConstruction, 'ry', ((ry > 0) ? ry : (-1 * ry)).toString());
+      this.domRenderer.setAttribute(this.elemInConstruction, 'rx', ((rx > 0) ? rx : (-1 * rx)).toString());
+      this.domRenderer.setAttribute(this.elemInConstruction, 'ry', ((ry > 0) ? ry : (-1 * ry)).toString());
       }
     });
 
@@ -333,8 +187,8 @@ export class EditorComponent implements OnInit, OnDestroy {
       if ((!rx || !ry) && this.elemInConstruction) {
         this.renderer.removeChild(this.svg.nativeElement, this.elemInConstruction);
       } else {
-        this.renderer.setAttribute(this.elemInConstruction, 'rx', ((rx > 0) ? rx : (-1 * rx)).toString());
-        this.renderer.setAttribute(this.elemInConstruction, 'ry', ((ry > 0) ? ry : (-1 * ry)).toString());
+        this.domRenderer.setAttribute(this.elemInConstruction, 'rx', ((rx > 0) ? rx : (-1 * rx)).toString());
+        this.domRenderer.setAttribute(this.elemInConstruction, 'ry', ((ry > 0) ? ry : (-1 * ry)).toString());
       }
     });
   }

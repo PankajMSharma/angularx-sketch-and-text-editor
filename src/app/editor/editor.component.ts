@@ -2,7 +2,7 @@ import { Component, OnInit, HostListener, Input, Renderer2, ViewChild, ElementRe
 import { Subscription, Observable, ReplaySubject } from 'rxjs';
 import { DrawingSettings } from '../models/settings/drawing-settings';
 import { SelectService } from '../services/select.service';
-import { TOOL_TAGNAMES } from '../constants/namespace';
+import { TOOL_TAGNAMES, TOOLNAMES } from '../constants/namespace';
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { gobbleEvent } from '../utils/event.utils';
 import { DomRendererService } from '../services/dom-renderer/domrenderer.service';
@@ -34,7 +34,7 @@ export class EditorComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.selectedTool.subscribe(selectedTool => {
-      if (selectedTool !== 'select') {
+      if (selectedTool !== TOOLNAMES.SELECT) {
         this.clearSelection();
       }
       this.currentTool = selectedTool;
@@ -50,9 +50,9 @@ export class EditorComponent implements OnInit, OnDestroy {
     gobbleEvent(event);
 
     switch (this.currentTool) {
-      case 'rectangle': this.drawRectangle(event);
+      case TOOLNAMES.RECTANGLE: this.drawRectangle(event);
       break;
-      case 'ellipse': this.drawEllipse(event);
+      case TOOLNAMES.ELLIPSE: this.drawEllipse(event);
       break;
       default: this.selectionMode(event);
       break;
@@ -139,13 +139,13 @@ export class EditorComponent implements OnInit, OnDestroy {
     if (group.getElementsByTagName('g').length > 0) {
       const rh: NodeListOf<SVGCircleElement> = group.getElementsByTagName('g').item(0).getElementsByTagName('circle');
 
-      for (let i = 0; i < rh.length; i++) {
-        const elmnt = rh.item(i);
+      Array.from(rh).forEach((elmnt: SVGCircleElement) => {
         this.renderer.setAttribute(elmnt, 'cx', (+elmnt.getAttribute('cx') - pos3).toString());
         this.renderer.setAttribute(elmnt, 'cy', (+elmnt.getAttribute('cy') - pos4).toString());
-      }
+      });
     }
   }
+
 
   /**
    * Sets new properties from dragged ellipse

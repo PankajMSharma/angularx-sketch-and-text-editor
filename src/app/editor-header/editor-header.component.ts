@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { ToolState } from '../models/tool-state';
-import { TOOLNAMES } from '../constants/namespace';
+import { TOOLNAMES, getToolNames } from '../constants/namespace';
 
 const DEFAULT_TOOL: string = 'select';
 
@@ -13,11 +13,12 @@ export class EditorHeaderComponent implements OnInit {
   @Input() editorTitle: string;
   @Output() selectedTool: EventEmitter<string> = new EventEmitter<string>();
   public toolsState: Array<ToolState> = new Array<ToolState>();
-  public toolsNames: Array<string> = new Array<string>(TOOLNAMES.ELLIPSE, TOOLNAMES.RECTANGLE, TOOLNAMES.SELECT);
+  public toolsNames: Array<string>;
 
   constructor() { }
 
   ngOnInit() {
+    this.toolsNames = getToolNames();
     this.initializeTools();
     this.selectTool();
   }
@@ -37,10 +38,10 @@ export class EditorHeaderComponent implements OnInit {
     }
 
     switch (toolName) {
-      case 'rectangle':
+      case TOOLNAMES.RECTANGLE:
         this.selectedTool.emit(toolName);
         break;
-      case 'ellipse':
+      case TOOLNAMES.ELLIPSE:
         this.selectedTool.emit(toolName);
         break;
       case 'textEdit':

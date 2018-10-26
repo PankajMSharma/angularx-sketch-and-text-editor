@@ -3,25 +3,25 @@
   <div class="collapse navbar-collapse" id="navbarNavDropdown">
     <ul class="navbar-nav">
       <li class="nav-item"
-          (click)="selectTool('rectangle')">
+          (click)="selectTool('RECTANGLE')">
         <a class="nav-link">
           <span class="far fa-square"
-                [ngClass]="{'active-tool': isSelectedTool('rectangle'), 'disabled-tool': isDisabled('rectangle')}"></span>
+                [ngClass]="{'active-tool': isSelectedTool('RECTANGLE'), 'disabled-tool': isDisabled('RECTANGLE')}"></span>
         </a>
       </li>
       <li class="nav-item"
-          (click)="selectTool('ellipse')">
+          (click)="selectTool('ELLIPSE')">
         <a class="nav-link">
           <span class="far fa-circle"
-          [ngClass]="{'active-tool': isSelectedTool('ellipse'), 'disabled-tool': isDisabled('ellipse')}"
+          [ngClass]="{'active-tool': isSelectedTool('ELLIPSE'), 'disabled-tool': isDisabled('ELLIPSE')}"
           ></span>
         </a>
       </li>
       <li class="nav-item"
-          (click)="selectTool('select')">
+          (click)="selectTool('SELECT')">
         <a class="nav-link">
           <span class="fas fa-location-arrow"
-          [ngClass]="{'active-tool': isSelectedTool('select'), 'disabled-tool': isDisabled('select')}"></span>
+          [ngClass]="{'active-tool': isSelectedTool('SELECT'), 'disabled-tool': isDisabled('SELECT')}"></span>
         </a>
       </li>
       <li class="nav-item"

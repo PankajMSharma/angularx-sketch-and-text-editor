@@ -1,6 +1,7 @@
 import { DrawingSettings } from './drawing-settings';
+import { SVGElementSettings } from './svg-element-settings';
 
-export class EllipseSettings {
+export class EllipseSettings extends SVGElementSettings {
     private _id: string;
     private _cx: string;
     private _cy: string;
@@ -13,6 +14,7 @@ export class EllipseSettings {
     private drawingSettings: DrawingSettings;
 
     constructor(event: MouseEvent, id: string) {
+        super();
         this.drawingSettings = DrawingSettings.getInstance();
         this.id = id;
         this.cx = event.clientX.toString();

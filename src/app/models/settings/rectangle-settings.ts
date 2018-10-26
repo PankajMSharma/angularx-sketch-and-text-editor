@@ -1,6 +1,7 @@
 import { DrawingSettings } from './drawing-settings';
+import { SVGElementSettings } from './svg-element-settings';
 
-export class RectangleSettings {
+export class RectangleSettings extends SVGElementSettings {
     private _id: string;
     private _x: string;
     private _y: string;
@@ -13,6 +14,7 @@ export class RectangleSettings {
     private drawingSettings: DrawingSettings;
 
     constructor(event: MouseEvent, id: string) {
+        super();
         this.drawingSettings = DrawingSettings.getInstance();
         this.id = id;
         this.x = event.clientX.toString();

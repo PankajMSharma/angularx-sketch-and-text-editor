@@ -12,10 +12,10 @@ export class Rectangle implements Shape {
         this.shapeConfigGenerator = new ShapeConfigGenerator();
     }
 
-    public createElement(shape: Rectangle, event: MouseEvent, id: string, hostElement?: any): Element {
+    public createElement(shape: Shape, event: MouseEvent, id: string, hostElement?: any): Element {
         this.settings = new RectangleSettings(event, id);
 
-        const attr: Map<string, string> = this.shapeConfigGenerator.getElementAttr(shape, RECTANGLE_ATTRS, event, id);
+        const attr: Map<string, string> = this.shapeConfigGenerator.getElementAttr(shape as Rectangle, RECTANGLE_ATTRS, event, id);
 
         return this.domRenderer.createSVGElement(TOOL_TAGNAMES.RECTANGLE, attr);
     }

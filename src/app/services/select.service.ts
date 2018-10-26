@@ -45,7 +45,7 @@ export class SelectService {
       // remove resize handler
       const resizeHandler: NodeListOf<Element> = this.selectionBoxGroup.getElementsByClassName('selectorHandlers');
       if (resizeHandler.length > 0) {
-        this.renderer.setAttribute(resizeHandler[0], 'display', 'none');
+        this.renderer.setAttribute(resizeHandler.item(0), 'display', 'none');
       }
 
       this.renderer.appendChild(this.selectionBoxGroup, selectorGroup);

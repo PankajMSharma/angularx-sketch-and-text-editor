@@ -2,7 +2,7 @@ import { Component, OnInit, HostListener, Input, Renderer2, ViewChild, ElementRe
 import { Subscription, Observable, ReplaySubject } from 'rxjs';
 import { DrawingSettings } from '../models/settings/drawing-settings';
 import { SelectService } from '../services/select.service';
-import { TOOL_TAGNAMES } from '../constants/namespace';
+import { TOOL_TAGNAMES, TOOLNAMES } from '../constants/namespace';
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { gobbleEvent } from '../utils/event.utils';
 import { DomRendererService } from '../services/dom-renderer/domrenderer.service';
@@ -35,7 +35,7 @@ export class EditorComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.selectedTool.subscribe(selectedTool => {
-      if (selectedTool !== 'select') {
+      if (selectedTool !== TOOLNAMES.SELECT) {
         this.clearSelection();
       }
       this.currentTool = selectedTool;
@@ -51,9 +51,9 @@ export class EditorComponent implements OnInit, OnDestroy {
     gobbleEvent(event);
 
     switch (this.currentTool) {
-      case 'rectangle': this.drawRectangle(event);
+      case TOOLNAMES.RECTANGLE: this.drawRectangle(event);
       break;
-      case 'ellipse': this.drawEllipse(event);
+      case TOOLNAMES.ELLIPSE: this.drawEllipse(event);
       break;
       default: this.selectionMode(event);
       break;
@@ -90,6 +90,64 @@ export class EditorComponent implements OnInit, OnDestroy {
 
       });
     }
+  }
+
+  /**
+   * Sets new properties for dragged selector box
+   * @param group
+   * @param pos3
+   * @param pos4
+   */
+  private dragSelectorBox(group: Element, pos3: number, pos4: number): void {
+    if (group.getElementsByTagName('path')) {
+      const path: SVGPathElement = group.getElementsByTagName('path')[0];
+      const d: String = path.getAttribute('d');
+      const dValues: number[] = d.match(/-*\d*(\.?\d+)/g).map(Number);
+      const pathArr: number[] = [];
+
+      for (let i = 0; i < dValues.length; i++) {
+        pathArr.push((i % 2 === 0) ? (dValues[i] - pos3) : (dValues[i] - pos4));
+      }
+
+      const pathD: string = 'M' + pathArr[0] + ',' + pathArr[1] + 'L' + pathArr[2] + ',' + pathArr[3] + ',' + pathArr[4] + ',' + pathArr[5]
+      + ',' + pathArr[6] + ',' + pathArr[7] + 'Z';
+
+      this.renderer.setAttribute(path, 'd', pathD);
+    }
+
+    if (group.getElementsByTagName('g').length > 0) {
+      const rh: NodeListOf<SVGCircleElement> = group.getElementsByTagName('g').item(0).getElementsByTagName('circle');
+
+      Array.from(rh).forEach((elmnt: SVGCircleElement) => {
+        this.renderer.setAttribute(elmnt, 'cx', (+elmnt.getAttribute('cx') - pos3).toString());
+        this.renderer.setAttribute(elmnt, 'cy', (+elmnt.getAttribute('cy') - pos4).toString());
+      });
+    }
+  }
+
+
+  /**
+   * Sets new properties from dragged ellipse
+   * @param elem
+   * @param pos3
+   * @param pos4
+   */
+  private dragEllipse (elem: SVGEllipseElement, pos3: number, pos4: number): void {
+    // set the element's new position
+    this.renderer.setAttribute(elem, 'cx', (+elem.getAttribute('cx') - pos3).toString());
+    this.renderer.setAttribute(elem, 'cy', (+elem.getAttribute('cy') - pos4).toString());
+  }
+
+  /**
+   * Sets new properties from dragged rectangle
+   * @param elem
+   * @param pos3
+   * @param pos4
+   */
+  private dragRectangle (elem: SVGRectElement, pos3: number, pos4: number): void {
+    // set the element's new position
+    this.renderer.setAttribute(elem, 'x', (+elem.getAttribute('x') - pos3).toString());
+    this.renderer.setAttribute(elem, 'y', (+elem.getAttribute('y') - pos4).toString());
   }
 
   /**

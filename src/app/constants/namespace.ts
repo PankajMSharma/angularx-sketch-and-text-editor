@@ -68,12 +68,6 @@ export const TOOLNAMES = {
   SELECT: 'SELECT'
 };
 
-/* export function constToArray(constant: Object) {
-  const arr: Array<string>;
-  for (key in constant) {
-    if (key !== undefined) {
-      arr.push(key);
-    }
-  }
-  return arr;
-} */
+export function getToolNames() {
+  return Object.getOwnPropertyNames(TOOLNAMES);
+}

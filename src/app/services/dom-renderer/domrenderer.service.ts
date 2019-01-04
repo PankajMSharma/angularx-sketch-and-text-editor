@@ -25,5 +25,11 @@ export class DomRendererService {
     return shape;
   }
 
+  public setAttribute(element: Element, name: string, value: string, namespace?: string): void {
+    this.renderer.setAttribute(element, name, value, namespace ? namespace : null);
+  }
 
+  public removeChild(parent: Element, child: Element): void {
+    this.renderer.removeChild(parent, child);
+  }
 }

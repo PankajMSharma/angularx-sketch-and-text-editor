@@ -1,4 +1,4 @@
-# angularx-sketch-and-text-editor (Work Under Progress so Code is not clean)
+# angularx-sketch-and-text-editor (Work Under Progress)
 - Rich Text and Sketch Editor based on Angular 5.
 - Allows user to create sketch using the tools provided.
 - User can select single element(by clicking) or multiple elements(using Ctrl key).

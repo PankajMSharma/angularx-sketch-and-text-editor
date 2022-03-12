@@ -32,5 +32,4 @@ export class DomRendererService {
   public removeChild(parent: Element, child: Element): void {
     this.renderer.removeChild(parent, child);
   }
-
 }

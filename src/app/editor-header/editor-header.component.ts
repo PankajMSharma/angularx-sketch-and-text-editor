@@ -19,14 +19,8 @@ export class EditorHeaderComponent implements OnInit {
 
   ngOnInit() {
     this.toolsNames = getToolNames();
-    // this.initializeTools();
     this.selectTool(DEFAULT_TOOL);
   }
-
-/*   public initializeTools(): void {
-    this.toolsNames.forEach((name: string) =>
-      this.toolsState.push(name === TOOLNAMES.SELECT ? new ToolState(name, 'selected') : new ToolState(name, 'enabled')));
-  } */
 
   public selectTool(toolName?: string): void {
     if (!toolName) {return;}

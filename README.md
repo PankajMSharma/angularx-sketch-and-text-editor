@@ -50,3 +50,4 @@ This project is licensed under the GNU General Public License v3.0 - see the LIC
 5. Selected objects can be dragged from one place to another on canvas.
 6. Resizing is work under progress. Hence, resizing is currently disabled.
 7. Status bar in future would contain information. Currently it is static.
+8. Drawing for touch is not supported yet. This important fucntionality would come in future.

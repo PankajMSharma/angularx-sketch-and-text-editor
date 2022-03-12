@@ -1,8 +1,17 @@
-# angularx-sketch-and-text-editor (Work Under Progress)
+# Open source angularx-sketch-and-text-editor (Work Under Progress)
 - Rich Text and Sketch Editor based on Angular 5.
+- Working link - http://31.220.63.50/dist/
 - Allows user to create sketch using the tools provided.
 - User can select single element(by clicking) or multiple elements(using Ctrl key).
 - User can drag selected elements.
+
+# How to contribute?
+1. Go to issue tab and pick any issue you like. Comment on the issue if you would like to work on it.(Email me at pankajmsharma357@hotmail.com if you need more info).
+2. Owner would officially allocate the issue to you and also add you as collaborator. Owner would also create a branch for you to work on.
+3. Commit your code on feature branch allocated to you in following format "#[Issue_number] [commit_message]". For eg. for issue 26, the commit message would be "#26 Multi-line textbox creation complete".
+4. Once the code is fixed and tested by you, create a Pull Request.
+5. Owner would review the code and merge it if all good.
+6. Congrats! By now you offically become an Open Source community member with you first contribution.
 
 # Getting Started
 

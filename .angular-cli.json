@@ -19,11 +19,9 @@
       "testTsconfig": "tsconfig.spec.json",
       "prefix": "ng",
       "styles": [
-        "styles.scss",
-        "../node_modules/bootstrap/scss/bootstrap.scss"
+        "styles.scss"
       ],
       "scripts": [
-        "../node_modules/bootstrap/js/src/index.js"
       ],
       "environmentSource": "environments/environment.ts",
       "environments": {

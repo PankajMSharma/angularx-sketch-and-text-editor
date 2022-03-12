@@ -13,12 +13,13 @@ export class RectangleSettings extends SVGElementSettings {
     private _position: string;
     private drawingSettings: DrawingSettings;
 
-    constructor(event: MouseEvent, id: string) {
+    constructor(event: MouseEvent, id: string, svg: SVGElement) {
         super();
         this.drawingSettings = DrawingSettings.getInstance();
         this.id = id;
-        this.x = event.clientX.toString();
-        this.y = event.clientY.toString();
+        const svgRect = svg.getBoundingClientRect();
+        this.x = (event.clientX - svgRect.left).toString();
+        this.y = (event.clientY - svgRect.top).toString();
         this.width = '0';
         this.height = '0';
         this.fill = this.drawingSettings.fill;

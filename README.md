@@ -40,3 +40,14 @@ Pankaj Sharma - https://www.linkedin.com/in/pankajmsharma/
 
 # License
 This project is licensed under the GNU General Public License v3.0 - see the LICENSE.md file for details
+
+
+# Functionalities:
+1. Only Rectangle, Square and Select work from header. Text box and Upload are future icons.
+2. On load, Select is the default functionality.
+3. Each new drawn object would come over the previous one. This creates a layered effect. Switching layers is not currently allowed.
+4. Multiple objects can be selected by holding control key while selection.
+5. Selected objects can be dragged from one place to another on canvas.
+6. Resizing is work under progress. Hence, resizing is currently disabled.
+7. Status bar in future would contain information. Currently it is static.
+8. Drawing for touch is not supported yet. This important fucntionality would come in future.

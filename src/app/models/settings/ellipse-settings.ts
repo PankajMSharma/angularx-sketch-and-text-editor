@@ -13,12 +13,13 @@ export class EllipseSettings extends SVGElementSettings {
     private _position: string;
     private drawingSettings: DrawingSettings;
 
-    constructor(event: MouseEvent, id: string) {
+    constructor(event: MouseEvent, id: string, svg: SVGElement) {
         super();
         this.drawingSettings = DrawingSettings.getInstance();
         this.id = id;
-        this.cx = event.clientX.toString();
-        this.cy = event.clientY.toString();
+        const svgRect = svg.getBoundingClientRect();
+        this.cx = (event.clientX - svgRect.left).toString();
+        this.cy = (event.clientY - svgRect.top).toString();
         this.rx = '0';
         this.ry = '0';
         this.fill = this.drawingSettings.fill;

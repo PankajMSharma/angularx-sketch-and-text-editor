@@ -9,6 +9,8 @@ import { SelectService } from './services/select.service';
 import { DomRendererService } from './services/dom-renderer/domrenderer.service';
 import { ShapeFactory } from './models/shape-factory';
 import { ShapeConfigGenerator } from './services/shape-config-generator/shape-config-generator';
+import { DrawVariables } from './models/draw-variables';
+import { TooltipDirective } from './directive/tooltip-directive';
 
 
 @NgModule({
@@ -19,12 +21,14 @@ import { ShapeConfigGenerator } from './services/shape-config-generator/shape-co
     AppComponent,
     EditorComponent,
     EditorHeaderComponent,
-    EditorFooterComponent
+    EditorFooterComponent,
+    TooltipDirective
   ],
   providers: [
     SelectService,
     DomRendererService,
-    ShapeFactory
+    ShapeFactory,
+    DrawVariables
   ],
   bootstrap: [AppComponent]
 })

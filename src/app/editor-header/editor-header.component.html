@@ -1,41 +1,64 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light header">
-  <a class="navbar-brand editor-title">{{editorTitle}}</a>
-  <div class="collapse navbar-collapse" id="navbarNavDropdown">
-    <ul class="navbar-nav">
-      <li class="nav-item"
+<nav class="header">
+  <img src="../../favicon.ico">
+  <a class="editor-title">{{editorTitle}}</a>
+  <div class="vertical-separation"></div>
+  <div class="header-collapse" id="navbarNavDropdown">
+    <!-- Structure of Navigation is bound to change strongly. Hence, no for loop is needed ultil then -->
+    <ul class="navigation-list">
+      <li class="navigation-item"
+          [ngClass]="{'disabled': getToolConfig('RECTANGLE').disabled}"
           (click)="selectTool('RECTANGLE')">
-        <a class="nav-link">
+        <a class="navigation-link" 
+          [tooltip]="getTooltipConfig('RECTANGLE').text" 
+          [tooltipPlacement]="getTooltipConfig('RECTANGLE').position" 
+          [tooltipDelay]="getTooltipConfig('RECTANGLE').delay">
           <span class="far fa-square"
-                [ngClass]="{'active-tool': isSelectedTool('RECTANGLE'), 'disabled-tool': isDisabled('RECTANGLE')}"></span>
+                [ngClass]="{'active-tool': isSelectedTool('RECTANGLE')}"></span>
         </a>
       </li>
-      <li class="nav-item"
+      <li class="navigation-item"
+          [ngClass]="{'disabled': getToolConfig('ELLIPSE').disabled}"
           (click)="selectTool('ELLIPSE')">
-        <a class="nav-link">
+        <a class="navigation-link" 
+          [tooltip]="getTooltipConfig('ELLIPSE').text" 
+          [tooltipPlacement]="getTooltipConfig('ELLIPSE').position" 
+          [tooltipDelay]="getTooltipConfig('ELLIPSE').delay">
           <span class="far fa-circle"
-          [ngClass]="{'active-tool': isSelectedTool('ELLIPSE'), 'disabled-tool': isDisabled('ELLIPSE')}"
+          [ngClass]="{'active-tool': isSelectedTool('ELLIPSE')}"
           ></span>
         </a>
       </li>
-      <li class="nav-item"
+      <li class="navigation-item"
+          [ngClass]="{'disabled': getToolConfig('SELECT').disabled}"
           (click)="selectTool('SELECT')">
-        <a class="nav-link">
+        <a class="navigation-link"
+          [tooltip]="getTooltipConfig('SELECT').text" 
+          [tooltipPlacement]="getTooltipConfig('SELECT').position" 
+          [tooltipDelay]="getTooltipConfig('SELECT').delay">
           <span class="fas fa-location-arrow"
-          [ngClass]="{'active-tool': isSelectedTool('SELECT'), 'disabled-tool': isDisabled('SELECT')}"></span>
+          [ngClass]="{'active-tool': isSelectedTool('SELECT')}"></span>
         </a>
       </li>
-      <li class="nav-item"
-          (click)="selectTool('textEdit')">
-        <a class="nav-link">
+      <li class="navigation-item"
+          [ngClass]="{'disabled': getToolConfig('TEXTBOX').disabled}"
+          (click)="selectTool('TEXTBOX')">
+        <a class="navigation-link"
+          [tooltip]="getTooltipConfig('TEXTBOX').text" 
+          [tooltipPlacement]="getTooltipConfig('TEXTBOX').position" 
+          [tooltipDelay]="getTooltipConfig('TEXTBOX').delay">
           <span class="fas fa-font"
-          [ngClass]="{'active-tool': isSelectedTool('textEdit'), 'disabled-tool': isDisabled('textEdit')}"></span>
+          [ngClass]="{'active-tool': isSelectedTool('TEXTBOX')}"></span>
         </a>
       </li>
-      <li class="nav-item"
-          (click)="selectTool('fileUpload')">
-        <a class="nav-link">
+      <li class="navigation-item"
+          [ngClass]="{'disabled': getToolConfig('FILE_UPLOAD').disabled}"
+          (click)="selectTool('FILE_UPLOAD')">
+        <a class="navigation-link"
+          [tooltip]="getTooltipConfig('FILE_UPLOAD').text" 
+          [tooltipPlacement]="getTooltipConfig('FILE_UPLOAD').position" 
+          [tooltipDelay]="getTooltipConfig('FILE_UPLOAD').delay">
           <span class="fas fa-file-upload"
-          [ngClass]="{'active-tool': isSelectedTool('fileUpload'), 'disabled-tool': isDisabled('fileUpload')}"></span>
+          [ngClass]="{'active-tool': isSelectedTool('FILE_UPLOAD')}"></span>
         </a>
       </li>
     </ul>

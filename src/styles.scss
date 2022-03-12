@@ -1,7 +1,14 @@
-@import '~bootstrap/dist/css/bootstrap.min.css';
+@import './global-variables.css';
+@import 'common-css/tooltip.css';
 
 html, body
 {
+    font-family: var(--global-font);
     height: 100%;
     width: 100%;
+    margin: 0;
+}
+
+.vertical-separation {
+    border-right: solid 1px #000;
 }

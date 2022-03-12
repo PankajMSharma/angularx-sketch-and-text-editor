@@ -1,3 +1,5 @@
+import { TOOLTIP_ACCEPTED_POSITIONS } from "../directive/tooltip-directive";
+
 export const NAMESPACE = {
     SVG: 'http://www.w3.org/2000/svg',
     XMLNS: 'http://www.w3.org/2000/svg',
@@ -62,12 +64,45 @@ export const RECTANGLE_ATTRS = {
   POSITION: 'position'
 };
 
-export const TOOLNAMES = {
+export const TOOLNAME = {
   ELLIPSE: 'ELLIPSE',
   RECTANGLE: 'RECTANGLE',
-  SELECT: 'SELECT'
+  SELECT: 'SELECT',
+  TEXTBOX: 'TEXTBOX',
+  FILE_UPLOAD: 'FILE_UPLOAD'
 };
 
+export const TOOL_CONFIGS: ToolConfig[] = [
+  {name: TOOLNAME.ELLIPSE, selected: false, disabled: false, 
+    tooltipSettings: {text: 'Ellipse', delay: 500, position: 'auto'}
+  },
+  {name: TOOLNAME.RECTANGLE, selected: true, disabled: false,
+    tooltipSettings: {text: 'Rectangle', delay: 500, position: 'auto'}
+  },
+  {name: TOOLNAME.SELECT, selected: false, disabled: false,
+    tooltipSettings: {text: 'Select', delay: 500, position: 'auto'}
+  },
+  {name: TOOLNAME.TEXTBOX, selected: false, disabled: true,
+    tooltipSettings: {text: 'Textbox', delay: 500, position: 'auto'}
+  },
+  {name: TOOLNAME.FILE_UPLOAD, selected: false, disabled: true,
+    tooltipSettings: {text: 'File upload', delay: 500, position: 'auto'}
+  },
+];
+
 export function getToolNames() {
-  return Object.getOwnPropertyNames(TOOLNAMES);
+  return TOOL_CONFIGS.map(tool => tool.name);
+}
+
+export interface ToolConfig {
+  name: string;
+  selected?: boolean;
+  disabled?: boolean;
+  tooltipSettings?: TooltipConfig
+}
+
+export interface TooltipConfig {
+  text: string;
+  delay: number;
+  position: TOOLTIP_ACCEPTED_POSITIONS;
 }

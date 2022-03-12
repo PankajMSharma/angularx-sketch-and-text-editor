@@ -2,14 +2,13 @@ import { Component, OnInit, HostListener, Input, Renderer2, ViewChild, ElementRe
 import { Subscription, Observable, ReplaySubject } from 'rxjs';
 import { DrawingSettings } from '../models/settings/drawing-settings';
 import { SelectService } from '../services/select.service';
-import { TOOL_TAGNAMES, TOOLNAMES } from '../constants/namespace';
-import { fromEvent } from 'rxjs/observable/fromEvent';
+import { TOOL_TAGNAMES, TOOLNAME } from '../constants/namespace';
 import { gobbleEvent } from '../utils/event.utils';
-import { DomRendererService } from '../services/dom-renderer/domrenderer.service';
 import { ShapeFactory } from '../models/shape-factory';
 import { Rectangle } from '../models/rectangle';
-import { Shape } from '../models/shape';
 import { Ellipse } from '../models/ellipse';
+import { DrawVariables } from '../models/draw-variables';
+import { DrawMouseSubscriptions } from '../models/draw-mouse-subscriptions';
 
 @Component({
   selector: 'ng-editor',
@@ -21,24 +20,36 @@ export class EditorComponent implements OnInit, OnDestroy {
   @ViewChild('svg') svg: ElementRef;
   private renderer: Renderer2;
   private currentTool: string;
-  private elemInConstruction: Element;
   private drawSettings: DrawingSettings;
   private mouseMoveSubscription: Subscription;
   private mouseUpSubscription: Subscription;
   public selectedElements: Array<SVGElement> = [];
 
-  constructor(private rendererFactory: RendererFactory2, private selectService: SelectService, private domRenderer: DomRendererService,
-    private shapeFactory: ShapeFactory) {
+  constructor(
+    private rendererFactory: RendererFactory2,
+    private selectService: SelectService,
+    private shapeFactory: ShapeFactory,
+    private drawVariables: DrawVariables) {
     this.renderer = this.rendererFactory.createRenderer(null, null);
     this.drawSettings = DrawingSettings.getInstance();
    }
 
   ngOnInit() {
     this.selectedTool.subscribe(selectedTool => {
-      if (selectedTool !== TOOLNAMES.SELECT) {
+      if (selectedTool !== TOOLNAME.SELECT) {
         this.selectedElements = this.selectService.clearSelection(this.svg, this.selectedElements);
       }
       this.currentTool = selectedTool;
+    });
+
+    this.drawVariables.elementUnderContruction
+    .subscribe(underContruction => {
+      if (!underContruction && this.mouseMoveSubscription) {
+        this.mouseMoveSubscription.unsubscribe();
+      }
+      if (!underContruction && this.mouseUpSubscription) {
+        this.mouseUpSubscription.unsubscribe();
+      }
     });
   }
 
@@ -50,10 +61,14 @@ export class EditorComponent implements OnInit, OnDestroy {
   public onMouseDown(event: MouseEvent) {
     gobbleEvent(event);
 
-    switch (this.currentTool) {
-      case TOOLNAMES.RECTANGLE: this.drawRectangle(event);
+    if (this.drawVariables.elementUnderContruction.value) {
+      return;
+    }
+
+    switch (this.currentTool.toLocaleLowerCase()) {
+      case TOOLNAME.RECTANGLE.toLocaleLowerCase(): this.drawRectangle(event);
       break;
-      case TOOLNAMES.ELLIPSE: this.drawEllipse(event);
+      case TOOLNAME.ELLIPSE.toLocaleLowerCase(): this.drawEllipse(event);
       break;
       default: this.selectionMode(event);
       break;
@@ -127,8 +142,8 @@ export class EditorComponent implements OnInit, OnDestroy {
   public onMouseUp(event: MouseEvent) {
     event.preventDefault();
 
-    if (this.elemInConstruction) {
-      this.elemInConstruction = null;
+    if (this.drawVariables.elementUnderContruction.value) {
+      this.drawVariables.elementUnderContruction.next(null);
 
       if (this.mouseMoveSubscription && !this.mouseMoveSubscription.closed) {
         this.mouseMoveSubscription.unsubscribe();
@@ -144,53 +159,28 @@ export class EditorComponent implements OnInit, OnDestroy {
    *
    * @param event
    */
-  private drawRectangle(event: MouseEvent): void {
-    const shape: Rectangle = this.shapeFactory.getShape(TOOL_TAGNAMES.RECTANGLE) as Rectangle;
+  private drawEllipse(event: MouseEvent): void {
+    const shape: Ellipse = this.shapeFactory.getShape(TOOL_TAGNAMES.ELLIPSE) as Ellipse;
 
-    shape.drawRectangle(event, this.elemInConstruction, this.mouseMoveSubscription, this.mouseUpSubscription,
+    const subscriptions: DrawMouseSubscriptions = shape.drawEllipse(event, this.mouseMoveSubscription, this.mouseUpSubscription,
                         this.generateElementId(), this.svg);
+
+    this.mouseMoveSubscription = subscriptions.mouseMoveSubscription;
+    this.mouseUpSubscription = subscriptions.mouseUpSubscription;
   }
 
   /**
    *
    * @param event
    */
-  public drawEllipse(event: MouseEvent): void {
-    let cx: number, cy: number;
+  private drawRectangle(event: MouseEvent): void {
+    const shape: Rectangle = this.shapeFactory.getShape(TOOL_TAGNAMES.RECTANGLE) as Rectangle;
 
-    if (!this.elemInConstruction) {
-      const shape: Shape = this.shapeFactory.getShape(TOOL_TAGNAMES.ELLIPSE);
+    const subscriptions: DrawMouseSubscriptions = shape.drawRectangle(event, this.mouseMoveSubscription, this.mouseUpSubscription,
+                        this.generateElementId(), this.svg);
 
-      const elem: Element = shape.createElement(shape, event, this.generateElementId());
-
-      this.elemInConstruction = elem;
-
-      this.svg.nativeElement.append(this.elemInConstruction);
-
-      cx = +this.elemInConstruction.getAttribute('cx');
-      cy = +this.elemInConstruction.getAttribute('cy');
-    }
-
-    this.mouseMoveSubscription = Observable.fromEvent(this.svg.nativeElement, 'mousemove').subscribe((moveEvent: MouseEvent) => {
-      if (this.elemInConstruction) {
-      const rx: number = moveEvent.clientX - cx;
-      const ry: number = moveEvent.clientY - cy;
-      this.domRenderer.setAttribute(this.elemInConstruction, 'rx', ((rx > 0) ? rx : (-1 * rx)).toString());
-      this.domRenderer.setAttribute(this.elemInConstruction, 'ry', ((ry > 0) ? ry : (-1 * ry)).toString());
-      }
-    });
-
-    this.mouseUpSubscription = Observable.fromEvent(this.svg.nativeElement, 'mouseup').subscribe((UpEvent: MouseEvent) => {
-      const rx: number = UpEvent.clientX - cx;
-      const ry: number = UpEvent.clientY - cy;
-
-      if ((!rx || !ry) && this.elemInConstruction) {
-        this.renderer.removeChild(this.svg.nativeElement, this.elemInConstruction);
-      } else {
-        this.domRenderer.setAttribute(this.elemInConstruction, 'rx', ((rx > 0) ? rx : (-1 * rx)).toString());
-        this.domRenderer.setAttribute(this.elemInConstruction, 'ry', ((ry > 0) ? ry : (-1 * ry)).toString());
-      }
-    });
+    this.mouseMoveSubscription = subscriptions.mouseMoveSubscription;
+    this.mouseUpSubscription = subscriptions.mouseUpSubscription;
   }
 
   /**

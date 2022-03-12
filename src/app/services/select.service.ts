@@ -140,7 +140,7 @@ export class SelectService {
     }
   }
 
-    /**
+  /**
    * Drags selected elements
    * @param event
    */
